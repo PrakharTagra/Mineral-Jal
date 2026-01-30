@@ -1,0 +1,192 @@
+/* Container */
+.profile-container {
+  padding: 16px;
+  max-width: 480px;
+  margin: auto;
+  padding-bottom: 110px;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* Heading */
+h2 {
+  margin-bottom: 16px;
+  color: #111827;
+}
+
+/* Card */
+.card {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Text */
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.muted {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Call / WhatsApp */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #f3f4f6;
+}
+
+/* Section titles */
+.section-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+/* RO item */
+.ro-item {
+  background: #f1f5f9;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+/* RO action buttons */
+.ro-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ro-actions button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 10px;
+  border: 1px solid #cbd5f5;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ro-actions button:hover {
+  background: #eef2ff;
+}
+
+/* Status badges */
+.status {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.due {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Service history */
+.service-item {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cost {
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+}
+
+/* Sticky bottom bar */
+.profile-save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.14);
+}
+
+/* Bottom primary actions */
+.primary {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.secondary {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: none;
+  background: #16a34a;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.primary:hover {
+  background: #1d4ed8;
+}
+
+.secondary:hover {
+  background: #15803d;
+}
+
+.clickable {
+  cursor: pointer;
+}
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #111827;
+}

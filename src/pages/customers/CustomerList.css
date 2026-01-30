@@ -1,0 +1,51 @@
+.customer-list-container {
+  padding: 16px;
+  max-width: 480px;
+  margin: auto;
+  padding-bottom: 90px;
+  background: #f3f4f6;
+}
+
+/* Reuse global rule */
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #111827;
+}
+
+/* Customer card */
+.customer-card {
+  background: #ffffff;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.customer-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Text */
+.customer-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.customer-phone {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Arrow */
+.arrow {
+  font-size: 22px;
+  color: #9ca3af;
+}

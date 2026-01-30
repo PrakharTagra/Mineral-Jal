@@ -1,0 +1,200 @@
+.service-container {
+  padding: 12px;
+  max-width: 480px;
+  margin: auto;
+  padding-bottom: 100px;
+  background: #f1f5f9;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Cards */
+.card {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.card.highlight {
+  border-left: 3px solid #2563eb;
+}
+
+/* Labels */
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* Inputs */
+input,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+textarea {
+  resize: none;
+  height: 60px;
+}
+
+/* Toggle */
+.toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.toggle button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+  font-size: 13px;
+}
+
+.toggle .active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* Parts */
+.parts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.part-item {
+  background: #f8fafc;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.part-name {
+  display: block;
+  font-weight: 500;
+}
+
+.part-price {
+  font-size: 11px;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.part-item.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.part-item.selected .part-name,
+.part-item.selected .part-price {
+  color: white;
+}
+
+/* Billing */
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.bill-total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #d1d5db;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Bottom bar */
+.save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  padding: 8px;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.12);
+}
+
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #16a34a;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+/* Secondary button */
+.secondary-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Printable bill */
+.bill-print {
+  display: none;
+}
+
+.bill-print table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.bill-print th,
+.bill-print td {
+  border: 1px solid #000;
+  padding: 6px;
+}
+
+.bill-note {
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+/* Print mode */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .bill-print,
+  .bill-print * {
+    visibility: visible;
+  }
+
+  .bill-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block;
+  }
+}

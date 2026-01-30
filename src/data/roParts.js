@@ -1,0 +1,18 @@
+export const RO_PARTS = [
+  { id: "spun", name: "Spun Filter", price: 150 },
+  { id: "sediment", name: "Sediment Filter", price: 200 },
+  { id: "carbon", name: "Carbon Filter", price: 250 },
+  { id: "membrane", name: "Membrane", price: 1500 },
+  { id: "flow", name: "Flow Restrictor", price: 120 },
+  { id: "solenoid", name: "Solenoid Valve", price: 350 },
+  { id: "pump", name: "Booster Pump", price: 1800 },
+  { id: "uv", name: "UV Chamber", price: 900 },
+  { id: "uf", name: "UF Filter", price: 800 },
+  { id: "mineral", name: "Mineral Cartridge", price: 500 },
+  { id: "alkaline", name: "Alkaline Filter", price: 700 },
+  { id: "copper", name: "Active Copper", price: 600 },
+  { id: "smps", name: "SMPS", price: 550 },
+  { id: "tap", name: "RO Tap", price: 250 },
+  { id: "cabinet", name: "Cabinet", price: 2000 },
+  { id: "tds", name: "TDS Adjuster", price: 300 },
+];
