@@ -3,10 +3,18 @@ import "./AddService.css";
 import { RO_PARTS } from "../../data/roParts";
 
 const AddService = () => {
-  const [serviceType, setServiceType] = useState("OWNER");
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
+  const [customer, setCustomer] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    reference: "",
+  });
+
   const [selectedParts, setSelectedParts] = useState([]);
   const [serviceCharge, setServiceCharge] = useState(300);
-  const [discount, setDiscount] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [startAmc, setStartAmc] = useState(false);
 
   const togglePart = (part) => {
     setSelectedParts((prev) =>
@@ -21,52 +29,107 @@ const AddService = () => {
     0
   );
 
-  const finalAmount = partsTotal + serviceCharge - discount;
+  const discountAmount = Math.round(
+    (partsTotal * discountPercent) / 100
+  );
+
+  const finalAmount = partsTotal + serviceCharge - discountAmount;
+
+  /* ---------- VALIDATION ---------- */
+  const isCustomerValid = isNewCustomer
+    ? customer.name && customer.phone
+    : true;
+
+  const isFormValid =
+    isCustomerValid &&
+    selectedParts.length > 0 &&
+    serviceCharge >= 0;
+
+  /* ---------- SAVE HANDLER ---------- */
+  const handleSave = () => {
+    const payload = {
+      customer: isNewCustomer ? customer : "EXISTING_CUSTOMER_ID",
+      parts: selectedParts,
+      serviceCharge,
+      discountPercent,
+      discountAmount,
+      totalAmount: finalAmount,
+      startAmc,
+    };
+
+    console.log("SERVICE DATA TO SAVE:", payload);
+    alert("Service saved successfully (mock)");
+  };
 
   return (
     <div className="service-container">
       <h2 className="page-title">Add Service</h2>
 
-      {/* Service Type */}
-      <div className="card">
-        <p className="label">Service Type</p>
-        <div className="toggle">
-          <button
-            className={serviceType === "OWNER" ? "active" : ""}
-            onClick={() => setServiceType("OWNER")}
-          >
-            Owner Installed
-          </button>
-          <button
-            className={serviceType === "EXTERNAL" ? "active" : ""}
-            onClick={() => setServiceType("EXTERNAL")}
-          >
-            External RO
-          </button>
-        </div>
-      </div>
-
-      {/* Customer */}
+      {/* CUSTOMER */}
       <div className="card">
         <p className="label">Customer</p>
-        <input placeholder="Search by name or mobile number" />
+
+        <div className="toggle">
+          <button
+            className={!isNewCustomer ? "active" : ""}
+            onClick={() => setIsNewCustomer(false)}
+          >
+            Existing
+          </button>
+          <button
+            className={isNewCustomer ? "active" : ""}
+            onClick={() => setIsNewCustomer(true)}
+          >
+            New
+          </button>
+        </div>
+
+        {!isNewCustomer && (
+          <input placeholder="Search by name or mobile number" />
+        )}
       </div>
 
-      {/* External RO */}
-      {serviceType === "EXTERNAL" && (
+      {isNewCustomer && (
         <div className="card">
-          <p className="label">RO Brand / Model</p>
-          <input placeholder="Eg. Kent, AquaGuard" />
+          <p className="label">New Customer Details</p>
+          <input
+            placeholder="Customer Name *"
+            value={customer.name}
+            onChange={(e) =>
+              setCustomer({ ...customer, name: e.target.value })
+            }
+          />
+          <input
+            placeholder="Mobile Number *"
+            value={customer.phone}
+            onChange={(e) =>
+              setCustomer({ ...customer, phone: e.target.value })
+            }
+          />
+          <input
+            placeholder="Address"
+            value={customer.address}
+            onChange={(e) =>
+              setCustomer({ ...customer, address: e.target.value })
+            }
+          />
+          <input
+            placeholder="Reference (optional)"
+            value={customer.reference}
+            onChange={(e) =>
+              setCustomer({ ...customer, reference: e.target.value })
+            }
+          />
         </div>
       )}
 
-      {/* Service Date */}
+      {/* SERVICE DATE */}
       <div className="card">
         <p className="label">Service Date</p>
         <input type="date" />
       </div>
 
-      {/* Parts */}
+      {/* PARTS */}
       <div className="card">
         <p className="label">Parts Replaced</p>
 
@@ -88,7 +151,7 @@ const AddService = () => {
         </div>
       </div>
 
-      {/* Billing */}
+      {/* BILLING */}
       <div className="card highlight">
         <p className="label">Billing Summary</p>
 
@@ -106,64 +169,36 @@ const AddService = () => {
 
         <input
           type="number"
-          placeholder="Discount"
-          value={discount}
-          onChange={(e) => setDiscount(Number(e.target.value))}
+          placeholder="Discount (%) on parts"
+          value={discountPercent}
+          onChange={(e) =>
+            setDiscountPercent(Number(e.target.value))
+          }
         />
+
+        <div className="bill-row">
+          <span>Discount</span>
+          <strong>-₹{discountAmount}</strong>
+        </div>
 
         <div className="bill-total">
           Total Bill: ₹{finalAmount}
         </div>
       </div>
 
-      {/* AMC Option */}
-      {serviceType === "EXTERNAL" && (
-        <div className="card">
-          <label className="amc-option">
-            <input type="checkbox" /> Start AMC for this RO
-          </label>
-        </div>
-      )}
-
-      {/* PRINTABLE BILL */}
-      <div className="bill-print">
-        <h2>Service Bill</h2>
-        <p>Date: {new Date().toLocaleDateString()}</p>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedParts.map((p) => (
-              <tr key={p.id}>
-                <td>{p.name}</td>
-                <td>₹{p.price}</td>
-              </tr>
-            ))}
-            <tr>
-              <td>Service Charge</td>
-              <td>₹{serviceCharge}</td>
-            </tr>
-            {discount > 0 && (
-              <tr>
-                <td>Discount</td>
-                <td>-₹{discount}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        <h3>Total: ₹{finalAmount}</h3>
-        <p className="bill-note">
-          Thank you for choosing our RO services.
-        </p>
+      {/* AMC */}
+      <div className="card">
+        <label className="amc-option">
+          <input
+            type="checkbox"
+            checked={startAmc}
+            onChange={() => setStartAmc(!startAmc)}
+          />
+          Start AMC for this RO
+        </label>
       </div>
 
-      {/* Bottom Actions */}
+      {/* ACTIONS */}
       <div className="save-bar">
         <button
           className="secondary-btn"
@@ -171,7 +206,104 @@ const AddService = () => {
         >
           Download Bill
         </button>
-        <button className="save-btn">Save Service</button>
+
+        <button
+          className="save-btn"
+          disabled={!isFormValid}
+          onClick={handleSave}
+        >
+          Save Service
+        </button>
+      </div>
+      
+      {/* PRINTABLE BILL */}
+      <div className="bill-print">
+        {/* Top Header */}
+        <div className="bill-inner">
+        <div className="invoice-top">
+          <div className="brand">
+            <h1>Mineral Jal</h1>
+            <p>RO Sales & Service</p>
+          </div>
+
+          <div className="invoice-title">
+            <h2>INVOICE</h2>
+          </div>
+        </div>
+
+        {/* Customer + Meta */}
+        <div className="invoice-info">
+          <div>
+            <p className="info-title">Invoice To:</p>
+            <p><strong>Customer Name</strong></p>
+            <p>Mobile: _____________</p>
+            <p>Address: ____________</p>
+          </div>
+
+          <div className="invoice-meta">
+            <p><strong>Invoice #:</strong> ________</p>
+            <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
+          </div>
+        </div>
+
+        {/* Items Table */}
+        <table className="invoice-table">
+          <thead>
+            <tr>
+              <th>Sl.</th>
+              <th>Item Description</th>
+              <th style={{ textAlign: "right" }}>Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedParts.map((part, index) => (
+              <tr key={part.id}>
+                <td>{index + 1}</td>
+                <td>{part.name}</td>
+                <td style={{ textAlign: "right" }}>₹{part.price}</td>
+              </tr>
+            ))}
+
+            <tr>
+              <td>{selectedParts.length + 1}</td>
+              <td>Service Charges</td>
+              <td style={{ textAlign: "right" }}>₹{serviceCharge}</td>
+            </tr>
+
+            {discountAmount > 0 && (
+              <tr>
+                <td>{selectedParts.length + 2}</td>
+                <td>Discount</td>
+                <td style={{ textAlign: "right" }}>- ₹{discountAmount}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        {/* Totals */}
+        <div className="invoice-summary">
+          <div>
+            <p>Sub Total:</p>
+            <p>₹{partsTotal + serviceCharge}</p>
+          </div>
+          <div className="grand-total">
+            <span>Total</span>
+            <strong>₹{finalAmount}</strong>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="invoice-footer">
+          <div>
+            <p><strong>Thank you for your business</strong></p>
+            <p>Terms & Conditions apply</p>
+          </div>
+
+          <div className="sign">
+            <p>Authorised Sign</p>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   );

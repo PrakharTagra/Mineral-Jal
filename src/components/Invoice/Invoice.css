@@ -1,0 +1,159 @@
+/* =========================
+   INVOICE – PROFESSIONAL
+========================= */
+
+.invoice-print {
+  width: 800px;
+  margin: auto;
+  padding: 32px;
+  background: #ffffff;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #1f2937;
+}
+
+/* HEADER */
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-name {
+  font-size: 26px;
+  margin: 0;
+}
+
+.tagline {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.invoice-title {
+  font-size: 34px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* BAR */
+.invoice-bar {
+  height: 12px;
+  background: #facc15;
+  margin: 16px 0;
+}
+
+/* INFO */
+.invoice-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.invoice-info p {
+  margin: 4px 0;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-strong {
+  font-weight: 700;
+}
+
+.invoice-info .right {
+  text-align: right;
+}
+
+/* TABLE */
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.invoice-table th {
+  background: #374151;
+  color: white;
+  padding: 10px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.invoice-table td {
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.invoice-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+/* SUMMARY */
+.invoice-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.thank-you {
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-weight: 600;
+  margin-top: 14px;
+}
+
+.small-text {
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.total-box {
+  width: 260px;
+}
+
+.total-box .row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.grand-total {
+  background: #facc15;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* FOOTER */
+.invoice-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 2px solid #facc15;
+  font-size: 12px;
+}
+
+/* PRINT */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-print,
+  .invoice-print * {
+    visibility: visible;
+  }
+
+  .invoice-print {
+    position: absolute;
+    inset: 0;
+  }
+}
