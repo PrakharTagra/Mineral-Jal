@@ -1,186 +1,3 @@
-// import { useState } from "react";
-// import "./AddRO.css";
-// import { RO_PARTS } from "../../data/roParts";
-
-// const AddRO = () => {
-//   const [isNewCustomer, setIsNewCustomer] = useState(false);
-//   const [selectedParts, setSelectedParts] = useState([]);
-//   const [makingCost, setMakingCost] = useState(1000);
-//   const [discount, setDiscount] = useState(0);
-
-//   const togglePart = (part) => {
-//     setSelectedParts((prev) =>
-//       prev.some((p) => p.id === part.id)
-//         ? prev.filter((p) => p.id !== part.id)
-//         : [...prev, part]
-//     );
-//   };
-
-//   const partsTotal = selectedParts.reduce(
-//     (sum, part) => sum + part.price,
-//     0
-//   );
-
-//   const finalAmount = partsTotal + makingCost - discount;
-
-//   return (
-//     <div className="ro-container">
-//       <h2 className="page-title">Add New RO</h2>
-
-//       {/* Customer */}
-//       <div className="card">
-//         <p className="label">Customer</p>
-
-//         <div className="toggle">
-//           <button
-//             className={!isNewCustomer ? "active" : ""}
-//             onClick={() => setIsNewCustomer(false)}
-//           >
-//             Existing
-//           </button>
-//           <button
-//             className={isNewCustomer ? "active" : ""}
-//             onClick={() => setIsNewCustomer(true)}
-//           >
-//             New
-//           </button>
-//         </div>
-
-//         {!isNewCustomer && (
-//           <input
-//             className="mt"
-//             placeholder="Search customer by name / mobile"
-//           />
-//         )}
-//       </div>
-
-//       {/* New Customer */}
-//       {isNewCustomer && (
-//         <div className="card">
-//           <p className="label">Customer Details</p>
-//           <input placeholder="Customer Name" />
-//           <input placeholder="Mobile Number" />
-//           <input placeholder="Address" />
-//           <input placeholder="Reference (optional)" />
-//         </div>
-//       )}
-
-//       {/* RO Details */}
-//       <div className="card">
-//         <p className="label">RO Details</p>
-//         <input placeholder="RO Model (Eg. AquaPro)" />
-//         <input type="date" />
-//         <textarea placeholder="Notes (optional)" />
-//       </div>
-
-//       {/* RO Components */}
-//       <div className="card">
-//         <p className="label">RO Components</p>
-
-//         <div className="parts-grid">
-//           {RO_PARTS.map((part) => (
-//             <div
-//               key={part.id}
-//               className={`part-item ${
-//                 selectedParts.some((p) => p.id === part.id) ? "selected" : ""
-//               }`}
-//               onClick={() => togglePart(part)}
-//             >
-//               <span className="part-name">{part.name}</span>
-//               <span className="part-price">₹{part.price}</span>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* Billing */}
-//       <div className="card highlight">
-//         <p className="label">Billing Summary</p>
-
-//         <div className="bill-row">
-//           <span>Parts Total</span>
-//           <strong>₹{partsTotal}</strong>
-//         </div>
-
-//         <input
-//           type="number"
-//           placeholder="Making / Installation Cost"
-//           value={makingCost}
-//           onChange={(e) => setMakingCost(Number(e.target.value))}
-//         />
-
-//         <input
-//           type="number"
-//           placeholder="Discount"
-//           value={discount}
-//           onChange={(e) => setDiscount(Number(e.target.value))}
-//         />
-
-//         <div className="bill-total">
-//           Total Bill: ₹{finalAmount}
-//         </div>
-//       </div>
-
-//       {/* AMC Info */}
-//       <div className="card">
-//         <p className="label">AMC Information</p>
-//         <ul className="info-list">
-//           <li>4-month service reminder (10 days before)</li>
-//           <li>8-month service reminder (10 days before)</li>
-//           <li>12-month renewal reminder (10 days before)</li>
-//         </ul>
-//       </div>
-
-//       {/* Printable Bill */}
-//       <div className="bill-print">
-//         <h2>RO Installation Bill</h2>
-//         <p>Date: {new Date().toLocaleDateString()}</p>
-
-//         <table>
-//           <thead>
-//             <tr>
-//               <th>Item</th>
-//               <th>Amount</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {selectedParts.map((p) => (
-//               <tr key={p.id}>
-//                 <td>{p.name}</td>
-//                 <td>₹{p.price}</td>
-//               </tr>
-//             ))}
-//             <tr>
-//               <td>Making / Installation</td>
-//               <td>₹{makingCost}</td>
-//             </tr>
-//             {discount > 0 && (
-//               <tr>
-//                 <td>Discount</td>
-//                 <td>-₹{discount}</td>
-//               </tr>
-//             )}
-//           </tbody>
-//         </table>
-
-//         <h3>Total: ₹{finalAmount}</h3>
-//         <p className="bill-note">
-//           Thank you for choosing our RO services.
-//         </p>
-//       </div>
-
-//       {/* Actions */}
-//       <div className="save-bar">
-//         <button className="secondary-btn" onClick={() => window.print()}>
-//           Download Bill
-//         </button>
-//         <button className="save-btn">Save RO & Start AMC</button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AddRO;
 import { useState } from "react";
 import "./AddRO.css";
 import { RO_PARTS } from "../../data/roParts";
@@ -194,6 +11,25 @@ const AddRO = () => {
     address: "",
     reference: "",
   });
+
+  const generateInvoiceNumber = (type) => {
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
+
+    const key = `invoice_counter_${type}_${dateStr}`;
+    const lastCount = Number(localStorage.getItem(key) || 0) + 1;
+
+    localStorage.setItem(key, lastCount);
+
+    const prefix = type === "SERVICE" ? "MJ-S" : "MJ-R";
+
+    return `${prefix}-${dateStr}-${String(lastCount).padStart(3, "0")}`;
+  };
+
+
+  const [invoiceNumber] = useState(() =>
+    generateInvoiceNumber("RO")
+  );
 
   const [selectedParts, setSelectedParts] = useState([]);
   const [makingCost, setMakingCost] = useState(1000);
@@ -246,6 +82,8 @@ const AddRO = () => {
   /* ---------- SAVE ---------- */
   const handleSave = () => {
     const payload = {
+      invoiceNumber,
+      type:'RO',
       customer: isNewCustomer ? customer : "EXISTING_CUSTOMER_ID",
       components: selectedParts,
       makingCost,
@@ -438,6 +276,102 @@ const AddRO = () => {
         <button className="save-btn" onClick={handleSave}>
           Save RO & Start AMC
         </button>
+      </div>
+
+      {/* PRINTABLE BILL */}
+      <div className="bill-print">
+        <div className="bill-inner">
+          {/* Header */}
+          <div className="invoice-top">
+            <div className="brand">
+              <h1>Mineral Jal</h1>
+              <p>RO Sales & Service</p>
+            </div>
+
+            <div className="invoice-title">
+              <h2>INVOICE</h2>
+            </div>
+          </div>
+
+          {/* Customer + Meta */}
+          <div className="invoice-info">
+            <div>
+              <p className="info-title">Invoice To:</p>
+              <p><strong>{customer.name || "Customer Name"}</strong></p>
+              <p>{customer.phone}</p>
+              <p>{customer.address}</p>
+            </div>
+
+            <div className="invoice-meta">
+              <p><strong>Invoice #:</strong>{invoiceNumber}</p>
+              <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          {/* Items Table */}
+          <table className="invoice-table">
+            <thead>
+              <tr>
+                <th>Sl.</th>
+                <th>Item Description</th>
+                <th style={{ textAlign: "right" }}>Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedParts.map((part, index) => (
+                <tr key={part.id}>
+                  <td>{index + 1}</td>
+                  <td>{part.name}</td>
+                  <td style={{ textAlign: "right" }}>
+                    ₹{Number(part.price || 0)}
+                  </td>
+                </tr>
+              ))}
+
+              <tr>
+                <td>{selectedParts.length + 1}</td>
+                <td>Making / Installation Charges</td>
+                <td style={{ textAlign: "right" }}>
+                  ₹{makingCost}
+                </td>
+              </tr>
+
+              {discountAmount > 0 && (
+                <tr>
+                  <td>{selectedParts.length + 2}</td>
+                  <td>Discount</td>
+                  <td style={{ textAlign: "right" }}>
+                    - ₹{discountAmount}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          {/* Totals */}
+          <div className="invoice-summary">
+            <div>
+              <p>Sub Total:</p>
+              <p>₹{partsTotal + makingCost}</p>
+            </div>
+            <div className="grand-total">
+              <span>Total</span>
+              <strong>₹{finalAmount}</strong>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="invoice-footer">
+            <div>
+              <p><strong>Thank you for choosing Mineral Jal</strong></p>
+              <p>AMC activated with this installation</p>
+            </div>
+
+            <div className="sign">
+              <p>Authorised Sign</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

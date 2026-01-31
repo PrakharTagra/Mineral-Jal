@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState,useRef } from "react";
 import "./AddService.css";
 import { RO_PARTS } from "../../data/roParts";
 
 const AddService = () => {
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [customer, setCustomer] = useState({
     name: "",
@@ -10,6 +11,29 @@ const AddService = () => {
     address: "",
     reference: "",
   });
+  const invoiceRef = useRef("");
+  const saveBill = (bill) => {
+    const existing =
+      JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
+
+    existing.push(bill);
+
+    localStorage.setItem("MJ_BILLS", JSON.stringify(existing));
+  };
+
+  const generateInvoiceNumber = (type) => {
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
+
+    const key = `invoice_counter_${type}_${dateStr}`;
+    const lastCount = Number(localStorage.getItem(key) || 0) + 1;
+
+    localStorage.setItem(key, lastCount);
+
+    const prefix = type === "SERVICE" ? "MJ-S" : "MJ-R";
+
+    return `${prefix}-${dateStr}-${String(lastCount).padStart(3, "0")}`;
+  };
 
   const [selectedParts, setSelectedParts] = useState([]);
   const [serviceCharge, setServiceCharge] = useState(300);
@@ -49,18 +73,28 @@ const AddService = () => {
 
   /* ---------- VALIDATION ---------- */
   const isCustomerValid = isNewCustomer
-    ? customer.name && customer.phone
-    : true;
+    ? customer.name.trim() !== "" && customer.phone.trim() !== ""
+    : selectedCustomerId !== null;
 
   const isFormValid =
     isCustomerValid &&
     selectedParts.length > 0 &&
     serviceCharge >= 0;
 
+
+  const [isSaved, setIsSaved] = useState(false);  
   /* ---------- SAVE HANDLER ---------- */
   const handleSave = () => {
+    const invoiceNumber = generateInvoiceNumber("SERVICE");
+    invoiceRef.current = invoiceNumber;
+
     const payload = {
-      customer: isNewCustomer ? customer : "EXISTING_CUSTOMER_ID",
+      invoiceNumber,
+      date: new Date().toISOString(),
+      type: "SERVICE",
+      customer: isNewCustomer
+        ? customer
+        : { id: selectedCustomerId },
       parts: selectedParts,
       serviceCharge,
       discountPercent,
@@ -69,8 +103,9 @@ const AddService = () => {
       startAmc,
     };
 
-    console.log("SERVICE DATA TO SAVE:", payload);
-    alert("Service saved successfully (mock)");
+    saveBill(payload);
+    setIsSaved(true);
+    alert("Service saved successfully");
   };
 
   const updatePartPrice = (id, value) => {
@@ -79,7 +114,7 @@ const AddService = () => {
     setSelectedParts((prev) =>
       prev.map((p) =>
         p.id === id
-          ? { ...p, price: Number(value || 0) }
+          ? { ...p, price: value }   // keep string
           : p
       )
     );
@@ -109,8 +144,17 @@ const AddService = () => {
         </div>
 
         {!isNewCustomer && (
-          <input placeholder="Search by name or mobile number" />
+          <>
+            <input placeholder="Search by name or mobile number" />
+            <button
+              style={{ marginTop: 8 }}
+              onClick={() => setSelectedCustomerId("TEMP_ID")}
+            >
+              Select Customer
+            </button>
+          </>
         )}
+
       </div>
 
       {isNewCustomer && (
@@ -145,6 +189,11 @@ const AddService = () => {
             }
           />
         </div>
+      )}
+      {!isCustomerValid && (
+        <p style={{ color: "red", fontSize: 12 }}>
+          Please select or add a customer
+        </p>
       )}
 
       {/* SERVICE DATE */}
@@ -226,7 +275,12 @@ const AddService = () => {
             min="0"
             max="100"
             value={discountPercent}
-            onChange={(e) => setDiscountPercent(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (/^\d*$/.test(val)) {
+                setDiscountPercent(val === "" ? "" : Number(val));
+              }
+            }}
           />
         </div>
 
@@ -257,6 +311,7 @@ const AddService = () => {
       <div className="save-bar">
         <button
           className="secondary-btn"
+          disabled={!isSaved}
           onClick={() => window.print()}
         >
           Download Bill
@@ -296,7 +351,7 @@ const AddService = () => {
           </div>
 
           <div className="invoice-meta">
-            <p><strong>Invoice #:</strong> ________</p>
+            <p><strong>Invoice #:</strong>{invoiceRef.current}</p>
             <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
           </div>
         </div>
@@ -332,6 +387,14 @@ const AddService = () => {
                 <td style={{ textAlign: "right" }}>- ₹{discountAmount}</td>
               </tr>
             )}
+
+            {discountAmount === 0 && (
+              <tr>
+                <td>{selectedParts.length + 2}</td>
+                <td>Discount</td>
+                <td style={{ textAlign: "right" }}>₹0</td>
+              </tr>
+            )}
           </tbody>
         </table>
 
@@ -350,7 +413,7 @@ const AddService = () => {
         {/* Footer */}
         <div className="invoice-footer">
           <div>
-            <p><strong>Thank you for your business</strong></p>
+            <p><strong>Thank you for choosing Mineral Jal</strong></p>
             <p>Terms & Conditions apply</p>
           </div>
 
