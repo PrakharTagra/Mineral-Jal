@@ -325,9 +325,8 @@ textarea:focus {
 
 .amc-option {
   display: flex;
-  align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 500;
   color: #111827;
   cursor: pointer;
@@ -339,6 +338,8 @@ textarea:focus {
   height: 18px;
   accent-color: var(--primary);
   cursor: pointer;
+  display: flex;
+  justify-content: center;
 }
 
 /* Subtle card refinement for AMC */
@@ -544,4 +545,17 @@ textarea:focus {
     padding: 60px;
     display: block;
   }
+}
+.part-price-input {
+  width: 70px;
+  margin-top: 6px;
+  padding: 4px 6px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  text-align: center;
+}
+
+.part-item.selected .part-price-input {
+  background: #ffffff;
 }

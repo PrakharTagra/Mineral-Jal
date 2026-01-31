@@ -17,15 +17,27 @@ const AddService = () => {
   const [startAmc, setStartAmc] = useState(false);
 
   const togglePart = (part) => {
-    setSelectedParts((prev) =>
-      prev.some((p) => p.id === part.id)
-        ? prev.filter((p) => p.id !== part.id)
-        : [...prev, part]
-    );
-  };
+    setSelectedParts((prev) => {
+      const exists = prev.find((p) => p.id === part.id);
+
+      if (exists) {
+        return prev.filter((p) => p.id !== part.id);
+      }
+
+      return [
+        ...prev,
+        {
+          id: part.id,
+          name: part.name,
+          price: String(part.price),
+          basePrice: part.price,
+        },
+      ];
+    });
+  };  
 
   const partsTotal = selectedParts.reduce(
-    (sum, part) => sum + part.price,
+    (sum, part) => sum + Number(part.price || 0),
     0
   );
 
@@ -59,6 +71,18 @@ const AddService = () => {
 
     console.log("SERVICE DATA TO SAVE:", payload);
     alert("Service saved successfully (mock)");
+  };
+
+  const updatePartPrice = (id, value) => {
+    if (!/^\d*$/.test(value)) return;
+
+    setSelectedParts((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, price: Number(value || 0) }
+          : p
+      )
+    );
   };
 
   return (
@@ -134,20 +158,39 @@ const AddService = () => {
         <p className="label">Parts Replaced</p>
 
         <div className="parts-grid">
-          {RO_PARTS.map((part) => (
-            <div
-              key={part.id}
-              className={`part-item ${
-                selectedParts.some((p) => p.id === part.id)
-                  ? "selected"
-                  : ""
-              }`}
-              onClick={() => togglePart(part)}
-            >
-              <span className="part-name">{part.name}</span>
-              <span className="part-price">₹{part.price}</span>
-            </div>
-          ))}
+          {RO_PARTS.map((part) => {
+            const selected = selectedParts.find(
+              (p) => p.id === part.id
+            );
+
+            return (
+              <div
+                key={part.id}
+                className={`part-item ${selected ? "selected" : ""}`}
+                onClick={() => togglePart(part)}
+              >
+                <span className="part-name">{part.name}</span>
+
+                {selected ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="part-price-input"
+                    value={selected.price}
+                    placeholder="0"
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) =>
+                      updatePartPrice(part.id, e.target.value)
+                    }
+                  />
+                ) : (
+                  <span className="part-price">
+                    ₹{part.price}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -155,32 +198,45 @@ const AddService = () => {
       <div className="card highlight">
         <p className="label">Billing Summary</p>
 
+        {/* Parts total */}
         <div className="bill-row">
           <span>Parts Total</span>
           <strong>₹{partsTotal}</strong>
         </div>
 
-        <input
-          type="number"
-          placeholder="Service Charge"
-          value={serviceCharge}
-          onChange={(e) => setServiceCharge(Number(e.target.value))}
-        />
-
-        <input
-          type="number"
-          placeholder="Discount (%) on parts"
-          value={discountPercent}
-          onChange={(e) =>
-            setDiscountPercent(Number(e.target.value))
-          }
-        />
-
-        <div className="bill-row">
-          <span>Discount</span>
-          <strong>-₹{discountAmount}</strong>
+        {/* Service charge */}
+        <div className="bill-input">
+          <label>Service Charge (₹)</label>
+          <input
+            type="number"
+            placeholder="300"
+            value={serviceCharge}
+            onChange={(e) =>
+              setServiceCharge(Number(e.target.value) || 0)
+            }
+          />
         </div>
 
+        {/* Discount percent */}
+        <div className="bill-input">
+          <label>Discount on Parts (%)</label>
+          <input
+            type="number"
+            placeholder="0"
+            min="0"
+            max="100"
+            value={discountPercent}
+            onChange={(e) => setDiscountPercent(e.target.value)}
+          />
+        </div>
+
+        {/* Discount amount */}
+        <div className="bill-row">
+          <span>Discount Amount</span>
+          <strong>- ₹{discountAmount}</strong>
+        </div>
+
+        {/* Final total */}
         <div className="bill-total">
           Total Bill: ₹{finalAmount}
         </div>
@@ -193,8 +249,7 @@ const AddService = () => {
             type="checkbox"
             checked={startAmc}
             onChange={() => setStartAmc(!startAmc)}
-          />
-          Start AMC for this RO
+          /> Start AMC for this RO
         </label>
       </div>
 
@@ -235,9 +290,9 @@ const AddService = () => {
         <div className="invoice-info">
           <div>
             <p className="info-title">Invoice To:</p>
-            <p><strong>Customer Name</strong></p>
-            <p>Mobile: _____________</p>
-            <p>Address: ____________</p>
+            <p><strong>{customer.name}</strong></p>
+            <p>{customer.phone}</p>
+            <p>{customer.address}</p>
           </div>
 
           <div className="invoice-meta">
