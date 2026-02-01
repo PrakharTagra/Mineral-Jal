@@ -108,31 +108,6 @@ const AddRO = () => {
     setIsSaved(true);
     navigate(`/bill/${invoiceNumber}`);
   };
-  const pickFromContacts = async () => {
-    if (!("contacts" in navigator)) {
-      alert("Contact access not supported on this device");
-      return;
-    }
-
-    try {
-      const contacts = await navigator.contacts.select(
-        ["name", "tel"],
-        { multiple: false }
-      );
-
-      if (contacts.length > 0) {
-        const contact = contacts[0];
-
-        setCustomer((prev) => ({
-          ...prev,
-          name: contact.name?.[0] || "",
-          phone: contact.tel?.[0] || "",
-        }));
-      }
-    } catch (err) {
-      console.error("Contact pick cancelled or failed", err);
-    }
-  };
 
   const isCustomerValid = isNewCustomer
     ? customer.name.trim() && customer.phone.trim()
@@ -174,15 +149,6 @@ const AddRO = () => {
       {isNewCustomer && (
         <div className="card">
           <p className="label">Customer Details</p>
-          <button
-            type="button"
-            className="secondary-btn-1"
-            onClick={pickFromContacts}
-            style={{ marginBottom: 10 }}
-          >
-            Pick from Contacts
-          </button>
-
           <input
             placeholder="Customer Name"
             value={customer.name}
