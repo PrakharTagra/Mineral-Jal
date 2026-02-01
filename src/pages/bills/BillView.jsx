@@ -65,10 +65,7 @@ const BillView = () => {
 
         {/* HEADER */}
         <div className="invoice-top">
-          <div className="brand">
-            <h1>Mineral Jal</h1>
-            <p>RO Sales & Service</p>
-          </div>
+          <div className="logo"><img src="../../../assets/images/Mineral_jal.png" className="logobill"></img></div>
           <div className="invoice-title">
             <h2>INVOICE</h2>
           </div>
