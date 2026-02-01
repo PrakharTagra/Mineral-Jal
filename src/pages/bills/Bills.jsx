@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "./Bills.css";
-
+import { useNavigate } from "react-router-dom";
 const Bills = () => {
+  const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [activeTab, setActiveTab] = useState("ALL");
   // const sorted = [...stored].sort(
@@ -78,17 +79,12 @@ const Bills = () => {
               <strong>₹{bill.totalAmount}</strong>
 
               <button
-                onClick={() => {
-                  localStorage.setItem(
-                    "MJ_ACTIVE_BILL",
-                    JSON.stringify(bill)
-                  );
-                  window.open("/print", "_blank");
-                }}
+                onClick={() =>
+                  navigate(`/bills/${bill.invoiceNumber}`)
+                }
               >
-                View / Print
+                View Bill
               </button>
-              
             </div>
           </div>
         ))

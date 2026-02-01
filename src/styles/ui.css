@@ -366,7 +366,6 @@ textarea:focus {
    BASE
 ========================= */
 .bill-print {
-  display: none;
   background: #ffffff;
   padding: 28px 32px;
   font-family: "Segoe UI", Arial, sans-serif;

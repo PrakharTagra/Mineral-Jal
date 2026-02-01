@@ -7,8 +7,8 @@ import AddRO from "../pages/ro/AddRO";
 import AMCTracker from "../pages/amc/AMCTracker";
 import CustomerList from "../pages/customers/CustomerList";
 import CustomerProfile from "../pages/customers/CustomerProfile";
-import Bills from "../pages/bills/Bills";
-import PrintBill from "../pages/bills/PrintBill";
+import BillView from "../pages/bills/BillView"
+import Bills from "../pages/bills/bills";
 
 const AppRoutes = () => {
   return (
@@ -22,7 +22,7 @@ const AppRoutes = () => {
           <Route path="/customers" element={<CustomerList />} />
           <Route path="/customer/:id" element={<CustomerProfile />} />
           <Route path="/bills" element={<Bills />} />
-          <Route path="/print" element={<PrintBill />} />
+          <Route path="/bill/:invoiceNumber" element={<BillView />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>
