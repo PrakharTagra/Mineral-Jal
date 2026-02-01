@@ -120,6 +120,31 @@ const AddService = () => {
       )
     );
   };
+  const pickFromContacts = async () => {
+    if (!("contacts" in navigator)) {
+      alert("Contact access not supported on this device");
+      return;
+    }
+
+    try {
+      const contacts = await navigator.contacts.select(
+        ["name", "tel"],
+        { multiple: false }
+      );
+
+      if (contacts.length > 0) {
+        const contact = contacts[0];
+
+        setCustomer((prev) => ({
+          ...prev,
+          name: contact.name?.[0] || "",
+          phone: contact.tel?.[0] || "",
+        }));
+      }
+    } catch (err) {
+      console.error("Contact pick cancelled or failed", err);
+    }
+  };
 
   return (
     <div className="service-container">
@@ -161,6 +186,14 @@ const AddService = () => {
       {isNewCustomer && (
         <div className="card">
           <p className="label">New Customer Details</p>
+          <button
+            type="button"
+            className="secondary-btn-1"
+            onClick={pickFromContacts}
+            style={{ marginBottom: 10 }}
+          >
+            Pick from Contacts
+          </button>
           <input
             placeholder="Customer Name *"
             value={customer.name}
@@ -189,6 +222,9 @@ const AddService = () => {
               setCustomer({ ...customer, reference: e.target.value })
             }
           />
+          <p style={{ fontSize: 12, color: "#6b7280" }}>
+            Name & number fetched from contacts
+          </p>
         </div>
       )}
       {!isCustomerValid && (

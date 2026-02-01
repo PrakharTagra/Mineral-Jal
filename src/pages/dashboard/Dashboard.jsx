@@ -49,19 +49,19 @@ const Dashboard = () => {
       {/* Primary Actions */}
       <div className="actions-grid">
         <ActionButton
-          label="➕ Add New RO"
+          label="Add New RO"
           onClick={() => navigate("/add-ro")}
         />
         <ActionButton
-          label="🛠️ Add Service"
+          label="Add Service"
           onClick={() => navigate("/add-service")}
         />
         <ActionButton
-          label="🔁 AMC Tracker"
+          label="AMC Tracker"
           onClick={() => navigate("/amc")}
         />
         <ActionButton
-          label="👤 Customers"
+          label="Customers"
           onClick={() => navigate("/customers")}
         />
       </div>

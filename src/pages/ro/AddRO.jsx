@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./AddRO.css";
 import { RO_PARTS } from "../../data/roParts";
 
@@ -11,6 +11,19 @@ const AddRO = () => {
     address: "",
     reference: "",
   });
+  const invoiceRef = useRef("");
+
+  const [selectedParts, setSelectedParts] = useState([]);
+  const [makingCost, setMakingCost] = useState(1000);
+  const [discountPercent, setDiscountPercent] = useState("");
+  const [isSaved, setIsSaved] = useState(false);  
+
+  const saveBill = (bill) => {
+    const existing =
+      JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
+    existing.push(bill);
+    localStorage.setItem("MJ_BILLS", JSON.stringify(existing));
+  };
 
   const generateInvoiceNumber = (type) => {
     const today = new Date();
@@ -25,15 +38,6 @@ const AddRO = () => {
 
     return `${prefix}-${dateStr}-${String(lastCount).padStart(3, "0")}`;
   };
-
-
-  const [invoiceNumber] = useState(() =>
-    generateInvoiceNumber("RO")
-  );
-
-  const [selectedParts, setSelectedParts] = useState([]);
-  const [makingCost, setMakingCost] = useState(1000);
-  const [discountPercent, setDiscountPercent] = useState("");
 
   /* ---------- PARTS ---------- */
   const togglePart = (part) => {
@@ -81,21 +85,60 @@ const AddRO = () => {
 
   /* ---------- SAVE ---------- */
   const handleSave = () => {
+
+    const invoiceNumber = generateInvoiceNumber("RO");
+    invoiceRef.current = invoiceNumber;
+
     const payload = {
       invoiceNumber,
-      type:'RO',
-      customer: isNewCustomer ? customer : "EXISTING_CUSTOMER_ID",
-      components: selectedParts,
+      date: new Date().toISOString(),
+      type: "RO",
+      customer: isNewCustomer ? customer : { name: "Existing Customer" },
+      parts: selectedParts,
       makingCost,
       discountPercent,
       discountAmount,
       totalAmount: finalAmount,
       startAmc: true,
     };
-
-    console.log("NEW RO DATA:", payload);
-    alert("RO added & AMC started (mock)");
+    saveBill(payload);
+    setIsSaved(true);
+    window.location.href = `/bill/${invoiceNumber}`;
   };
+  const pickFromContacts = async () => {
+    if (!("contacts" in navigator)) {
+      alert("Contact access not supported on this device");
+      return;
+    }
+
+    try {
+      const contacts = await navigator.contacts.select(
+        ["name", "tel"],
+        { multiple: false }
+      );
+
+      if (contacts.length > 0) {
+        const contact = contacts[0];
+
+        setCustomer((prev) => ({
+          ...prev,
+          name: contact.name?.[0] || "",
+          phone: contact.tel?.[0] || "",
+        }));
+      }
+    } catch (err) {
+      console.error("Contact pick cancelled or failed", err);
+    }
+  };
+
+  const isCustomerValid = isNewCustomer
+    ? customer.name.trim() && customer.phone.trim()
+    : true;
+
+  const isFormValid =
+    isCustomerValid &&
+    selectedParts.length > 0 &&
+    makingCost >= 0;
 
   return (
     <div className="ro-container">
@@ -128,6 +171,15 @@ const AddRO = () => {
       {isNewCustomer && (
         <div className="card">
           <p className="label">Customer Details</p>
+          <button
+            type="button"
+            className="secondary-btn-1"
+            onClick={pickFromContacts}
+            style={{ marginBottom: 10 }}
+          >
+            Pick from Contacts
+          </button>
+
           <input
             placeholder="Customer Name"
             value={customer.name}
@@ -268,110 +320,12 @@ const AddRO = () => {
       {/* ACTIONS */}
       <div className="save-bar">
         <button
-          className="secondary-btn"
-          onClick={() => window.print()}
+          className="save-btn"
+          disabled={!isFormValid}
+          onClick={handleSave}
         >
-          Download Bill
-        </button>
-        <button className="save-btn" onClick={handleSave}>
           Save RO & Start AMC
         </button>
-      </div>
-
-      {/* PRINTABLE BILL */}
-      <div className="bill-print">
-        <div className="bill-inner">
-          {/* Header */}
-          <div className="invoice-top">
-            <div className="brand">
-              <h1>Mineral Jal</h1>
-              <p>RO Sales & Service</p>
-            </div>
-
-            <div className="invoice-title">
-              <h2>INVOICE</h2>
-            </div>
-          </div>
-
-          {/* Customer + Meta */}
-          <div className="invoice-info">
-            <div>
-              <p className="info-title">Invoice To:</p>
-              <p><strong>{customer.name || "Customer Name"}</strong></p>
-              <p>{customer.phone}</p>
-              <p>{customer.address}</p>
-            </div>
-
-            <div className="invoice-meta">
-              <p><strong>Invoice #:</strong>{invoiceNumber}</p>
-              <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
-            </div>
-          </div>
-
-          {/* Items Table */}
-          <table className="invoice-table">
-            <thead>
-              <tr>
-                <th>Sl.</th>
-                <th>Item Description</th>
-                <th style={{ textAlign: "right" }}>Amount (₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedParts.map((part, index) => (
-                <tr key={part.id}>
-                  <td>{index + 1}</td>
-                  <td>{part.name}</td>
-                  <td style={{ textAlign: "right" }}>
-                    ₹{Number(part.price || 0)}
-                  </td>
-                </tr>
-              ))}
-
-              <tr>
-                <td>{selectedParts.length + 1}</td>
-                <td>Making / Installation Charges</td>
-                <td style={{ textAlign: "right" }}>
-                  ₹{makingCost}
-                </td>
-              </tr>
-
-              {discountAmount > 0 && (
-                <tr>
-                  <td>{selectedParts.length + 2}</td>
-                  <td>Discount</td>
-                  <td style={{ textAlign: "right" }}>
-                    - ₹{discountAmount}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* Totals */}
-          <div className="invoice-summary">
-            <div>
-              <p>Sub Total:</p>
-              <p>₹{partsTotal + makingCost}</p>
-            </div>
-            <div className="grand-total">
-              <span>Total</span>
-              <strong>₹{finalAmount}</strong>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="invoice-footer">
-            <div>
-              <p><strong>Thank you for choosing Mineral Jal</strong></p>
-              <p>AMC activated with this installation</p>
-            </div>
-
-            <div className="sign">
-              <p>Authorised Sign</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

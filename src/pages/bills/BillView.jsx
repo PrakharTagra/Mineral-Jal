@@ -27,10 +27,17 @@ const BillView = () => {
 
   const parts = Array.isArray(bill.parts) ? bill.parts : [];
 
-  const partsTotal = parts.reduce(
+  const partsTotal = bill.parts.reduce(
     (sum, p) => sum + Number(p.price || 0),
     0
   );
+
+  const extraCharge =
+    bill.type === "SERVICE"
+      ? Number(bill.serviceCharge || 0)
+      : Number(bill.makingCost || 0);
+
+  const subTotal = partsTotal + extraCharge;
 
   return (
     <div className="bill-print">
@@ -107,8 +114,9 @@ const BillView = () => {
         <div className="invoice-summary">
           <div>
             <p>Sub Total:</p>
-            <p>₹{partsTotal + bill.serviceCharge}</p>
+            <p>₹{subTotal}</p>
           </div>
+
           <div className="grand-total">
             <span>Total</span>
             <strong>₹{bill.totalAmount}</strong>

@@ -1,83 +1,128 @@
+/* =========================
+   DASHBOARD CONTAINER
+========================= */
 .dashboard-container {
   padding: 16px;
   max-width: 480px;
   margin: auto;
+  padding-bottom: 80px;
+  background: #f4f6fb;
 }
 
+/* =========================
+   PAGE TITLE
+========================= */
 .page-title {
   font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #111827;
+  letter-spacing: -0.3px;
 }
 
-/* Summary Cards */
+/* =========================
+   SUMMARY CARDS
+========================= */
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 
 .summary-card {
-  background: white;
+  background: linear-gradient(180deg, #ffffff, #f9fafb);
   padding: 16px;
-  border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease;
+}
+
+.summary-card:active {
+  transform: scale(0.98);
 }
 
 .summary-title {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
   color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .summary-value {
   margin-top: 6px;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700;
+  color: #111827;
 }
 
-/* Actions */
+/* =========================
+   ACTION BUTTONS
+========================= */
 .actions-grid {
-  margin-top: 20px;
+  margin-top: 22px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 
 .action-btn {
-  padding: 14px;
-  border-radius: 14px;
+  padding: 16px;
+  border-radius: 18px;
   border: none;
-  background: #2563eb;
+  background: linear-gradient(180deg, #2563eb, #1e40af);
   color: white;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease;
 }
 
-/* Today Section */
+.action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.action-btn:active {
+  transform: scale(0.97);
+}
+
+/* =========================
+   TODAY SECTION
+========================= */
 .today-section {
-  margin-top: 28px;
+  margin-top: 30px;
 }
 
 .today-section h3 {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   font-size: 16px;
+  font-weight: 700;
+  color: #111827;
 }
 
+/* =========================
+   TODAY ITEMS
+========================= */
 .today-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
-  padding: 14px;
-  border-radius: 14px;
+  background: #ffffff;
+  padding: 14px 16px;
+  border-radius: 18px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .today-item p {
-  margin: 4px 0;
-  font-weight: 500;
+  margin: 2px 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #111827;
 }
 
 .today-item span {
@@ -85,16 +130,21 @@
   color: #6b7280;
 }
 
+/* =========================
+   QUICK ACTION BUTTON
+========================= */
 .quick-btn {
-  background: #e5e7eb;
+  background: #eef2ff;
+  color: #2563eb;
   border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.page-title {
-  font-size: 22px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
   font-weight: 600;
-  margin-bottom: 16px;
-  color: #111827;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.quick-btn:hover {
+  background: #e0e7ff;
 }
