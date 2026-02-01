@@ -80,7 +80,7 @@ const Bills = () => {
 
               <button
                 onClick={() =>
-                  navigate(`/bills/${bill.invoiceNumber}`)
+                  navigate(`/bill/${bill.invoiceNumber}`)
                 }
               >
                 View Bill
