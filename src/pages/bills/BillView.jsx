@@ -38,9 +38,53 @@ const BillView = () => {
       : Number(bill.makingCost || 0);
 
   const subTotal = partsTotal + extraCharge;
+  const handleDownload = () => {
+    const originalTitle = document.title;
+    document.title = bill.invoiceNumber;   // 👈 filename
+
+    window.print();
+
+    // restore title after print
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 500);
+  };
+
+  const handleWhatsAppShare = () => {
+    const message = `
+  Mineral Jal Invoice
+  Invoice No: ${bill.invoiceNumber}
+  Date: ${new Date(bill.date).toLocaleDateString()}
+  Amount: ₹${bill.totalAmount}
+
+  View Bill:
+  ${window.location.origin}/bill/${bill.invoiceNumber}
+    `.trim();
+
+    const url =
+      "https://wa.me/?text=" + encodeURIComponent(message);
+
+    window.open(url, "_blank");
+  };
+
 
   return (
     <div className="bill-print">
+      <div className="bill-button">
+        <button
+          className="download-btn no-print"
+          onClick={handleDownload}
+        >
+          Download Bill
+        </button>
+        <button
+          className="whatsapp-btn no-print"
+          onClick={handleWhatsAppShare}
+        >
+          Share on WhatsApp
+        </button>
+      </div>
+
       <div className="bill-inner">
 
         {/* HEADER */}

@@ -3,7 +3,7 @@ import "./BottomNav.css";
 
 const BottomNav = () => {
   return (
-    <nav className="bottom-nav">
+    <nav className="bottom-nav no-print">
       <NavLink to="/" end>
         <span>Home</span>
       </NavLink>

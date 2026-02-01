@@ -547,7 +547,7 @@ textarea:focus {
 }
 
 /* =========================
-   PRINT MODE
+   PRINT CONTROL
 ========================= */
 @media print {
   body * {
@@ -562,10 +562,15 @@ textarea:focus {
   .bill-print {
     position: absolute;
     inset: 0;
-    padding: 60px;
-    display: block;
+    background: white;
+  }
+
+  /* Hide UI elements */
+  .no-print {
+    display: none !important;
   }
 }
+
 .part-price-input {
   width: 70px;
   margin-top: 6px;
@@ -578,4 +583,33 @@ textarea:focus {
 
 .part-item.selected .part-price-input {
   background: #ffffff;
+}
+
+.download-btn {
+  margin: 12px auto;
+  display: block;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.whatsapp-btn {
+  margin: 10px auto;
+  display: block;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bill-button{
+  display: flex;
+  gap: 10;
 }
