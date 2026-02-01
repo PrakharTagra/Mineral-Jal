@@ -27,7 +27,7 @@ const BillView = () => {
 
   const parts = Array.isArray(bill.parts) ? bill.parts : [];
 
-  const partsTotal = bill.parts.reduce(
+  const partsTotal = parts.reduce(
     (sum, p) => sum + Number(p.price || 0),
     0
   );

@@ -1,8 +1,11 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./AddRO.css";
 import { RO_PARTS } from "../../data/roParts";
 
 const AddRO = () => {
+  const navigate = useNavigate();
+
   const [isNewCustomer, setIsNewCustomer] = useState(false);
 
   const [customer, setCustomer] = useState({
@@ -103,7 +106,7 @@ const AddRO = () => {
     };
     saveBill(payload);
     setIsSaved(true);
-    window.location.href = `/bill/${invoiceNumber}`;
+    navigate(`/bill/${invoiceNumber}`);
   };
   const pickFromContacts = async () => {
     if (!("contacts" in navigator)) {
