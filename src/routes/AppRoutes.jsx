@@ -8,7 +8,7 @@ import AMCTracker from "../pages/amc/AMCTracker";
 import CustomerList from "../pages/customers/CustomerList";
 import CustomerProfile from "../pages/customers/CustomerProfile";
 import BillView from "../pages/bills/BillView"
-import Bills from "../pages/bills/bills";
+import Bills from "../pages/bills/Bills";
 
 const AppRoutes = () => {
   return (
