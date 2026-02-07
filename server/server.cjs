@@ -4,7 +4,9 @@ const connectDB = require("./connect.cjs");
 
 const app = express();
 
-app.use(cors());
+app.use(cors(
+  {origin:"*"}
+));
 app.use(express.json());
 
 let db;
