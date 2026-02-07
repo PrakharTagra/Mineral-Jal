@@ -1,21 +1,52 @@
+import { useState } from "react";
 import "./login.css";
 
 export default function Login({ onLogin }) {
 
-  const handleSubmit = (e) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onLogin();   // switches to dashboard
+
+    const res = await fetch("http://localhost:5000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      onLogin();   // go to dashboard
+    } else {
+      alert(data.msg || "Login failed");
+    }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2>RO Service Manager</h2>
+        <h2>Admin Login</h2>
         <p className="sub">Login to continue</p>
 
         <form onSubmit={handleSubmit}>
-          <input type="text" placeholder="Email" />
-          <input type="password" placeholder="Password" />
+          <input
+            type="text"
+            placeholder="Email"
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Enter your Password"
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
+          />
+
           <button type="submit">Login</button>
         </form>
       </div>

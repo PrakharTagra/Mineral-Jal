@@ -1,15 +1,52 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import authRoutes from "./routes/auth";
+const express = require("express");
+const cors = require("cors");
+const connectDB = require("./connect.cjs");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect("mongodb://127.0.0.1:27017/ro_app");
+let db;
 
-app.use("/api/auth", authRoutes);
+async function start() {
+  const client = await connectDB();   // connect Atlas
+  db = client.db("ro_app");
 
-app.listen(5000, () => console.log("Server running on 5000"));
+  console.log("DB ready");
+
+  app.post("/api/register", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      await db.collection("users").insertOne({ email, password });
+
+      res.json({ msg: "User stored" });
+    } catch (err) {
+      console.log("REGISTER ERROR:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
+  });
+
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      const user = await db.collection("users").findOne({ email });
+
+      if (!user) return res.status(400).json({ msg: "User not found" });
+      if (user.password !== password)
+        return res.status(400).json({ msg: "Wrong password" });
+
+      res.json({ msg: "Login success" });
+    } catch (err) {
+      console.log("LOGIN ERROR:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
+  });
+
+  app.listen(5000, () => console.log("Server running on 5000"));
+}
+start();
+
+
