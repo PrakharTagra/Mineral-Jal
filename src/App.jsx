@@ -1,13 +1,15 @@
 import { useState } from "react";
+import AppRoutes from "./routes/AppRoutes";
 import Login from "../Login/login";
-import Dashboard from "./pages/dashboard/Dashboard";   // ← this file you sent
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
 
-  return loggedIn
-    ? <Dashboard />
-    : <Login onLogin={() => setLoggedIn(true)} />;
+  if (!loggedIn) {
+    return <Login onLogin={() => setLoggedIn(true)} />;
+  }
+
+  return <AppRoutes />;
 }
 
 export default App;
