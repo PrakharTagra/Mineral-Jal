@@ -5,6 +5,13 @@ import "../../styles/ui.css";
 const BillView = () => {
   const { invoiceNumber } = useParams();
   const [bill, setBill] = useState(null);
+  const owner = {
+    name: "Mineral Jal",
+    ownerName: "Robin Taneja", // change if needed
+    phone: "+91-9205898972",
+    email: "mineraljalroservices@gmail.com",
+    address: "Mineral Jal Building Ghaziabad 201002",
+  };
 
   useEffect(() => {
     const allBills =
@@ -65,35 +72,62 @@ const BillView = () => {
 
         {/* HEADER */}
         <div className="invoice-top">
-          <div className="logo"><img src="../../../assets/images/Mineral_jal.png" className="logobill"></img></div>
+          <div className="logo">
+            <img
+              src="../../../assets/images/Mineral_jal.png"
+              className="logobill"
+              alt="Mineral Jal"
+            />
+          </div>
+
           <div className="invoice-title">
             <h2>INVOICE</h2>
           </div>
         </div>
 
-        {/* CUSTOMER */}
+        {/* OWNER + CUSTOMER */}
         <div className="invoice-info">
+
+          {/* OWNER DETAILS (LEFT) */}
           <div>
-            <p className="info-title">Invoice To:</p>
-            <p><strong>{bill.customer?.name || "Customer"}</strong></p>
-            <p>{bill.customer?.phone || "-"}</p>
-            <p>{bill.customer?.address || "-"}</p>
+            <p className="info-title">From:</p>
+            <p><strong>{owner.name}</strong></p>
+            <p>Owner: {owner.ownerName}</p>
+            <p>Phone: {owner.phone}</p>
+            <p>Email: {owner.email}</p>
+            <p>{owner.address}</p>
+            {owner.gst && <p>GSTIN: {owner.gst}</p>}
           </div>
 
-          <div className="invoice-meta">
-            <p><strong>Invoice #:</strong> {bill.invoiceNumber}</p>
-            <p>
-              <strong>Date:</strong>{" "}
-              {new Date(bill.date).toLocaleDateString()}
-            </p>
+          {/* RIGHT SIDE */}
+          <div className="invoice-right">
+
+            {/* INVOICE META */}
+            <div className="invoice-meta">
+              <p><strong>Invoice #:</strong> {bill.invoiceNumber}</p>
+              <p>
+                <strong>Date:</strong>{" "}
+                {new Date(bill.date).toLocaleDateString()}
+              </p>
+            </div>
+
+            {/* INVOICE TO (UNDER META) */}
+            <div className="invoice-to">
+              <p className="info-title">Invoice To:</p>
+              <p><strong>{bill.customer?.name || "Customer"}</strong></p>
+              <p>{bill.customer?.phone || "-"}</p>
+              <p>{bill.customer?.address || "-"}</p>
+            </div>
+
           </div>
+
         </div>
 
         {/* ITEMS */}
         <table className="invoice-table">
           <thead>
             <tr>
-              <th>Sl.</th>
+              <th>S.No.</th>
               <th>Item Description</th>
               <th style={{ textAlign: "right" }}>Amount (₹)</th>
             </tr>
@@ -154,6 +188,6 @@ const BillView = () => {
       </div>
     </div>
   );
-};
+}
 
 export default BillView;
