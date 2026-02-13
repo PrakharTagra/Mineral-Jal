@@ -22,8 +22,9 @@ export default function AdminLogin() {
 
       if (data.token) {
         localStorage.setItem("adminToken", data.token);
-        navigate("/");
-      } else {
+        navigate("/dashboard");
+      }
+      else {
         alert(data.error);
       }
     } catch (error) {

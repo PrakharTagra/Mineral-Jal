@@ -13,19 +13,22 @@ import AdminLogin from "../pages/AdminLogin";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("adminToken");
-  return token ? children : <Navigate to="/admin-login" />;
+  return token ? children : <Navigate to="/admin-login" replace />;
 };
 
 const AppRoutes = () => {
   return (
     <Routes>
 
-      {/* LOGIN */}
+      {/* Default Route → Redirect to Login */}
+      <Route path="/" element={<Navigate to="/admin-login" replace />} />
+
+      {/* Login Route */}
       <Route path="/admin-login" element={<AdminLogin />} />
 
-      {/* PROTECTED ROUTES */}
+      {/* Protected Routes */}
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <MainLayout>
