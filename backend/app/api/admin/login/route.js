@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-// ✅ Handle CORS Preflight (VERY IMPORTANT)
+// ✅ Handle CORS Preflight
 export async function OPTIONS() {
   return new Response(null, {
     status: 200,
@@ -17,7 +17,6 @@ export async function POST(req) {
   try {
     const { email, password } = await req.json();
 
-    // 🔐 Hardcoded admin credentials (for now)
     if (email === "admin@mineraljal.com" && password === "123456") {
       const token = jwt.sign(
         { role: "admin" },
@@ -29,7 +28,7 @@ export async function POST(req) {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "http://localhost:5173",
+          "Access-Control-Allow-Origin": "*",
         },
       });
     }
@@ -40,7 +39,7 @@ export async function POST(req) {
         status: 401,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "http://localhost:5173",
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
@@ -52,7 +51,7 @@ export async function POST(req) {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "http://localhost:5173",
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
