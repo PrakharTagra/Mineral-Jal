@@ -1,0 +1,92 @@
+/* Full screen water gradient background */
+.admin-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    #0077b6,
+    #0096c7,
+    #00b4d8,
+    #48cae4
+  );
+  padding: 20px;
+}
+
+/* Glassmorphism card */
+.admin-form {
+  width: 100%;
+  max-width: 380px;
+  padding: 40px 30px;
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: white;
+}
+
+/* Heading */
+.admin-form h2 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Inputs */
+.admin-form input {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+
+  background: rgba(255, 255, 255, 0.9);
+  color: #023e8a;
+
+  transition: 0.3s ease;
+}
+
+.admin-form input:focus {
+  box-shadow: 0 0 0 2px #90e0ef;
+}
+
+/* Button */
+.admin-form button {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #023e8a, #0077b6);
+  color: white;
+
+  transition: 0.3s ease;
+}
+
+.admin-form button:hover {
+  background: linear-gradient(135deg, #0077b6, #00b4d8);
+  transform: translateY(-2px);
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .admin-form {
+    padding: 30px 20px;
+    border-radius: 16px;
+  }
+
+  .admin-form h2 {
+    font-size: 20px;
+  }
+}

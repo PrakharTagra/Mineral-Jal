@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../styles/adminLogin.css";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -10,21 +11,21 @@ export default function AdminLogin() {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/admin/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await res.json();
 
       if (data.token) {
         localStorage.setItem("adminToken", data.token);
         navigate("/dashboard");
-      }
-      else {
+      } else {
         alert(data.error);
       }
     } catch (error) {
@@ -33,9 +34,9 @@ export default function AdminLogin() {
   };
 
   return (
-    <div style={styles.container}>
-      <form onSubmit={handleLogin} style={styles.form}>
-        <h2>Mineral Jal Admin Login</h2>
+    <div className="admin-container">
+      <form onSubmit={handleLogin} className="admin-form">
+        <h2>Mineral Jal Admin</h2>
 
         <input
           type="email"
@@ -58,23 +59,3 @@ export default function AdminLogin() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f4f6f9",
-  },
-  form: {
-    padding: "40px",
-    background: "#fff",
-    borderRadius: "10px",
-    boxShadow: "0 0 20px rgba(0,0,0,0.1)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    width: "300px",
-  },
-};
