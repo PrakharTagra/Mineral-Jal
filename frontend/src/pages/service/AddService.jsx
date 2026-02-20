@@ -1,4 +1,5 @@
 import { useState,useRef } from "react";
+
 import "./AddService.css";
 import { RO_PARTS } from "../../data/roParts";
 
@@ -84,7 +85,7 @@ const AddService = () => {
 
   const [isSaved, setIsSaved] = useState(false);  
   /* ---------- SAVE HANDLER ---------- */
-  const handleSave = () => {
+  const handleSave = async() => {
     const invoiceNumber = generateInvoiceNumber("SERVICE");
     invoiceRef.current = invoiceNumber;
 
@@ -102,11 +103,30 @@ const AddService = () => {
       totalAmount: finalAmount,
       startAmc,
     };
+    let customerData = customer;
 
-    saveBill(payload);
-    setIsSaved(true);
-    alert("Service saved successfully");
-    window.location.href = `/bill/${invoiceNumber}`;
+if (isNewCustomer) {
+  const res = await fetch("/api/customers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(customer),
+  });
+
+  customerData = await res.json();
+}
+
+    // saveBill(payload);
+    // setIsSaved(true);
+    // alert("Service saved successfully");
+    // window.location.href = `/bill/${invoiceNumber}`;
+    await fetch("/api/services", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
+
+alert("Service saved in backend");
+window.location.href = `/bill/${invoiceNumber}`;
   };
 
   const updatePartPrice = (id, value) => {
