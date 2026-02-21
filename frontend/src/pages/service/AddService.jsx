@@ -1,4 +1,4 @@
-import { useState,useRef } from "react";
+import { useState,useRef,useEffect } from "react";
 import "./AddService.css";
 import { RO_PARTS } from "../../data/roParts";
 
@@ -12,6 +12,17 @@ const AddService = () => {
     reference: "",
   });
   const invoiceRef = useRef("");
+  const [customers, setCustomers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (!isNewCustomer) {
+      fetch(`${import.meta.env.VITE_API_URL}/api/customers`)
+        .then(res => res.json())
+        .then(data => setCustomers(data))
+        .catch(err => console.error(err));
+    }
+  }, [isNewCustomer]);
 
   const generateInvoiceNumber = (type) => {
     const today = new Date();
@@ -76,36 +87,86 @@ const AddService = () => {
 
   const [isSaved, setIsSaved] = useState(false);  
 
+// const handleSave = async () => {
+//   const invoiceNumber = generateInvoiceNumber("SERVICE");
+
+//   // 1️⃣ Create customer first
+//   const customerRes = await fetch(`${import.meta.env.VITE_API_URL}/api/customers`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(customer),
+//   });
+
+//   const customerData = await customerRes.json();
+//   const customerId = customerData.customer.id;
+
+//   // 2️⃣ Create service using customerId
+//   const serviceRes = await fetch(`${import.meta.env.VITE_API_URL}/api/services`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       invoiceNumber,
+//       type: "SERVICE",
+//       date: new Date().toISOString(),
+//       customerId,   // 🔥 VERY IMPORTANT
+//       parts: selectedParts,
+//       serviceCharge,
+//       discountPercent,
+//       discountAmount,
+//       totalAmount: finalAmount,
+//       startAmc,
+//     }),
+//   });
+
+//   const serviceData = await serviceRes.json();
+
+//   if (serviceData.success) {
+//     window.location.href = `/bill/${invoiceNumber}`;
+//   }
+// };
 const handleSave = async () => {
   const invoiceNumber = generateInvoiceNumber("SERVICE");
 
-  // 1️⃣ Create customer first
-  const customerRes = await fetch(`${import.meta.env.VITE_API_URL}/api/customers`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(customer),
-  });
+  let customerId;
 
-  const customerData = await customerRes.json();
-  const customerId = customerData.customer.id;
+  if (isNewCustomer) {
+    const customerRes = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/customers`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customer),
+      }
+    );
 
-  // 2️⃣ Create service using customerId
-  const serviceRes = await fetch(`${import.meta.env.VITE_API_URL}/api/services`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      invoiceNumber,
-      type: "SERVICE",
-      date: new Date().toISOString(),
-      customerId,   // 🔥 VERY IMPORTANT
-      parts: selectedParts,
-      serviceCharge,
-      discountPercent,
-      discountAmount,
-      totalAmount: finalAmount,
-      startAmc,
-    }),
-  });
+    const customerData = await customerRes.json();
+    customerId = customerData.customer.id;
+  } 
+
+  else {
+    customerId = selectedCustomerId;
+  }
+
+  // 🔥 Now create service
+  const serviceRes = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/services`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        invoiceNumber,
+        type: "SERVICE",
+        date: new Date().toISOString(),
+        customerId,
+        parts: selectedParts,
+        serviceCharge,
+        discountPercent,
+        discountAmount,
+        totalAmount: finalAmount,
+        startAmc,
+      }),
+    }
+  );
 
   const serviceData = await serviceRes.json();
 
@@ -125,7 +186,10 @@ const handleSave = async () => {
       )
     );
   };
-
+  const filteredCustomers = customers.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.phone.includes(searchTerm)
+  );
   return (
     <div className="service-container">
       <h2 className="page-title">Add Service</h2>
@@ -151,13 +215,42 @@ const handleSave = async () => {
 
         {!isNewCustomer && (
           <>
-            <input placeholder="Search by name or mobile number" />
-            <button
-              style={{ marginTop: 8 }}
-              onClick={() => setSelectedCustomerId("TEMP_ID")}
-            >
-              Select Customer
-            </button>
+            <input
+              placeholder="Search by name or mobile number"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            {filteredCustomers.length === 0 ? (
+              <p style={{ marginTop: 8, fontSize: 12 }}>
+                No customers found
+              </p>
+            ) : (
+              filteredCustomers.map((c) => (
+                <div
+                  key={c.id}
+                  style={{
+                    padding: 8,
+                    border: "1px solid #ddd",
+                    marginTop: 5,
+                    cursor: "pointer",
+                    background:
+                      selectedCustomerId === c.id
+                        ? "#e6f7ff"
+                        : "white",
+                  }}
+                  onClick={() => {
+                    setSelectedCustomerId(c.id);
+                    setSearchTerm("");
+                  }}
+                  >
+                  <strong>{c.name}</strong>
+                  <div style={{ fontSize: 12 }}>
+                    {c.phone}
+                  </div>
+                </div>
+              ))
+            )}
           </>
         )}
 
