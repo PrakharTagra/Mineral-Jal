@@ -84,7 +84,7 @@ const BillView = () => {
         <div className="invoice-top">
           <div className="logo">
             <img
-              src="../../../assets/images/Mineral_jal.png"
+              src="/Mineral_jal.png"
               className="logobill"
               alt="Mineral Jal"
             />
