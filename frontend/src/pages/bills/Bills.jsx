@@ -10,15 +10,23 @@ const Bills = () => {
   // );
 
   useEffect(() => {
-    const stored =
-      JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
+    const fetchBills = async () => {
+      try {
+        const res = await fetch("/api/services");
+        const data = await res.json();
 
-    // latest first
-    const sorted = stored.sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
-    );
+        // latest first
+        const sorted = data.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
 
-    setBills(sorted);
+        setBills(sorted);
+      } catch (error) {
+        console.error("Error fetching bills:", error);
+      }
+    };
+
+    fetchBills();
   }, []);
 
   const filteredBills =

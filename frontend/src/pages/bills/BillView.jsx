@@ -14,15 +14,25 @@ const BillView = () => {
   };
 
   useEffect(() => {
-    const allBills =
-      JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
+  if (!invoiceNumber) return;
 
-    const found = allBills.find(
-      (b) => b.invoiceNumber === invoiceNumber
-    );
+  const fetchBill = async () => {
+    try {
+      const res = await fetch(
+        `/api/services?invoiceNumber=${invoiceNumber}`
+      );
 
-    setBill(found || null);
-  }, [invoiceNumber]);
+      const data = await res.json();
+
+      setBill(data || null);
+    } catch (error) {
+      console.error("Error fetching bill:", error);
+      setBill(null);
+    }
+  };
+
+  fetchBill();
+}, [invoiceNumber]);
 
   if (!invoiceNumber) {
     return <p style={{ padding: 20 }}>Invalid invoice URL</p>;

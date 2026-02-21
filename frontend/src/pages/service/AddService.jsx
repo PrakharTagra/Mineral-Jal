@@ -1,5 +1,4 @@
 import { useState,useRef } from "react";
-
 import "./AddService.css";
 import { RO_PARTS } from "../../data/roParts";
 
@@ -13,14 +12,14 @@ const AddService = () => {
     reference: "",
   });
   const invoiceRef = useRef("");
-  const saveBill = (bill) => {
-    const existing =
-      JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
+  // const saveBill = (bill) => {
+  //   const existing =
+  //     JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
 
-    existing.push(bill);
+  //   existing.push(bill);
 
-    localStorage.setItem("MJ_BILLS", JSON.stringify(existing));
-  };
+  //   localStorage.setItem("MJ_BILLS", JSON.stringify(existing));
+  // };
 
   const generateInvoiceNumber = (type) => {
     const today = new Date();
@@ -85,49 +84,87 @@ const AddService = () => {
 
   const [isSaved, setIsSaved] = useState(false);  
   /* ---------- SAVE HANDLER ---------- */
-  const handleSave = async() => {
-    const invoiceNumber = generateInvoiceNumber("SERVICE");
-    invoiceRef.current = invoiceNumber;
+//   const handleSave = async() => {
+//     const invoiceNumber = generateInvoiceNumber("SERVICE");
+//     invoiceRef.current = invoiceNumber;
 
-    const payload = {
+//     const payload = {
+//       invoiceNumber,
+//       date: new Date().toISOString(),
+//       type: "SERVICE",
+//       customer: isNewCustomer
+//         ? customer
+//         : { id: selectedCustomerId },
+//       parts: selectedParts,
+//       serviceCharge,
+//       discountPercent,
+//       discountAmount,
+//       totalAmount: finalAmount,
+//       startAmc,
+//     };
+//     let customerData = customer;
+
+// if (isNewCustomer) {
+//   const res = await fetch("/api/customers", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(customer),
+//   });
+
+//   customerData = await res.json();
+// }
+
+//     // saveBill(payload);
+//     // setIsSaved(true);
+//     // alert("Service saved successfully");
+//     // window.location.href = `/bill/${invoiceNumber}`;
+//     await fetch("/api/services", {
+//   method: "POST",
+//   headers: { "Content-Type": "application/json" },
+//   body: JSON.stringify(payload),
+// });
+
+// alert("Service saved in backend");
+// window.location.href = `/bill/${invoiceNumber}`;
+//   };
+
+const handleSave = async () => {
+  const invoiceNumber = generateInvoiceNumber("SERVICE");
+
+  // 1️⃣ Create customer first
+  const customerRes = await fetch("/api/customers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(customer),
+  });
+
+  const customerData = await customerRes.json();
+  const customerId = customerData.customer.id;
+
+  // 2️⃣ Create service using customerId
+  const serviceRes = await fetch("/api/services", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
       invoiceNumber,
-      date: new Date().toISOString(),
       type: "SERVICE",
-      customer: isNewCustomer
-        ? customer
-        : { id: selectedCustomerId },
+      date: new Date().toISOString(),
+      customerId,   // 🔥 VERY IMPORTANT
       parts: selectedParts,
       serviceCharge,
       discountPercent,
       discountAmount,
       totalAmount: finalAmount,
       startAmc,
-    };
-    let customerData = customer;
-
-if (isNewCustomer) {
-  const res = await fetch("/api/customers", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(customer),
+    }),
   });
 
-  customerData = await res.json();
-}
+  const serviceData = await serviceRes.json();
 
-    // saveBill(payload);
-    // setIsSaved(true);
-    // alert("Service saved successfully");
-    // window.location.href = `/bill/${invoiceNumber}`;
-    await fetch("/api/services", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload),
-});
-
-alert("Service saved in backend");
-window.location.href = `/bill/${invoiceNumber}`;
-  };
+  if (serviceData.success) {
+    window.location.href = `/bill/${invoiceNumber}`;
+  }
+};
 
   const updatePartPrice = (id, value) => {
     if (!/^\d*$/.test(value)) return;
@@ -209,9 +246,6 @@ window.location.href = `/bill/${invoiceNumber}`;
               setCustomer({ ...customer, reference: e.target.value })
             }
           />
-          <p style={{ fontSize: 12, color: "#6b7280" }}>
-            Name & number fetched from contacts
-          </p>
         </div>
       )}
       {!isCustomerValid && (
