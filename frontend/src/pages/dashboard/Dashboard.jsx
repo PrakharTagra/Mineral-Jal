@@ -2,7 +2,6 @@ import React from "react";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
 
-// mock data (later replace with API)
 const summary = {
   activeAmcs: 42,
   dueSoon: 8,
