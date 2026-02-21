@@ -12,14 +12,6 @@ const AddService = () => {
     reference: "",
   });
   const invoiceRef = useRef("");
-  // const saveBill = (bill) => {
-  //   const existing =
-  //     JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
-
-  //   existing.push(bill);
-
-  //   localStorage.setItem("MJ_BILLS", JSON.stringify(existing));
-  // };
 
   const generateInvoiceNumber = (type) => {
     const today = new Date();
@@ -83,56 +75,12 @@ const AddService = () => {
 
 
   const [isSaved, setIsSaved] = useState(false);  
-  /* ---------- SAVE HANDLER ---------- */
-//   const handleSave = async() => {
-//     const invoiceNumber = generateInvoiceNumber("SERVICE");
-//     invoiceRef.current = invoiceNumber;
-
-//     const payload = {
-//       invoiceNumber,
-//       date: new Date().toISOString(),
-//       type: "SERVICE",
-//       customer: isNewCustomer
-//         ? customer
-//         : { id: selectedCustomerId },
-//       parts: selectedParts,
-//       serviceCharge,
-//       discountPercent,
-//       discountAmount,
-//       totalAmount: finalAmount,
-//       startAmc,
-//     };
-//     let customerData = customer;
-
-// if (isNewCustomer) {
-//   const res = await fetch("/api/customers", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(customer),
-//   });
-
-//   customerData = await res.json();
-// }
-
-//     // saveBill(payload);
-//     // setIsSaved(true);
-//     // alert("Service saved successfully");
-//     // window.location.href = `/bill/${invoiceNumber}`;
-//     await fetch("/api/services", {
-//   method: "POST",
-//   headers: { "Content-Type": "application/json" },
-//   body: JSON.stringify(payload),
-// });
-
-// alert("Service saved in backend");
-// window.location.href = `/bill/${invoiceNumber}`;
-//   };
 
 const handleSave = async () => {
   const invoiceNumber = generateInvoiceNumber("SERVICE");
 
   // 1️⃣ Create customer first
-  const customerRes = await fetch("/api/customers", {
+  const customerRes = await fetch(`${import.meta.env.VITE_API_URL}/api/customers`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(customer),
@@ -142,7 +90,7 @@ const handleSave = async () => {
   const customerId = customerData.customer.id;
 
   // 2️⃣ Create service using customerId
-  const serviceRes = await fetch("/api/services", {
+  const serviceRes = await fetch(`${import.meta.env.VITE_API_URL}/api/services`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
