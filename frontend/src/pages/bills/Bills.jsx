@@ -12,7 +12,9 @@ const Bills = () => {
   useEffect(() => {
     const fetchBills = async () => {
       try {
-        const res = await fetch("/api/services");
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/services`
+        );
         const data = await res.json();
 
         // latest first

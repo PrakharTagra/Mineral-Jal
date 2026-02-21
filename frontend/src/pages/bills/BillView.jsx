@@ -19,7 +19,7 @@ const BillView = () => {
   const fetchBill = async () => {
     try {
       const res = await fetch(
-        `/api/services?invoiceNumber=${invoiceNumber}`
+        `${import.meta.env.VITE_API_URL}/api/services?invoiceNumber=${invoiceNumber}`
       );
 
       const data = await res.json();
