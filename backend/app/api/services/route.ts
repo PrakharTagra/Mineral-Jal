@@ -160,16 +160,15 @@ const allowedOrigins = [
 ];
 
 function getCorsHeaders(origin: string | null) {
-  if (origin && allowedOrigins.includes(origin)) {
-    return {
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    };
-  }
+  const allowedOrigin =
+    origin && allowedOrigins.includes(origin)
+      ? origin
+      : allowedOrigins[1];
 
   return {
-    "Access-Control-Allow-Origin": allowedOrigins[1],
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
   };
 }
 

@@ -77,16 +77,15 @@ const allowedOrigins = [
 ];
 
 function getCorsHeaders(origin: string | null) {
-  if (origin && allowedOrigins.includes(origin)) {
-    return {
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    };
-  }
+  const allowedOrigin =
+    origin && allowedOrigins.includes(origin)
+      ? origin
+      : allowedOrigins[1];
 
   return {
-    "Access-Control-Allow-Origin": allowedOrigins[1],
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
   };
 }
 
@@ -108,18 +107,6 @@ export async function GET(req: Request) {
   });
 }
 
-// export async function POST(req: Request) {
-//   const origin = req.headers.get("origin");
-//   const body = await req.json();
-
-//   const newCustomer = {
-//     id: Date.now(),
-//     name: body.name,
-//     phone: body.phone,
-//     address: body.address,
-//     reference: body.reference,
-//     services: [],
-//   };
 export async function POST(req: Request) {
   const origin = req.headers.get("origin");
   const body = await req.json();
@@ -151,19 +138,6 @@ export async function POST(req: Request) {
     reference: body.reference,
     services: [],
   };
-
-  CUSTOMERS.push(newCustomer);
-
-  return new Response(
-    JSON.stringify({
-      success: true,
-      customer: newCustomer,
-    }),
-    {
-      headers: getCorsHeaders(origin),
-    }
-  );
-}
 
   CUSTOMERS.push(newCustomer);
 
