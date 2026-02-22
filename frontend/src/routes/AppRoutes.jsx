@@ -21,7 +21,16 @@ const AppRoutes = () => {
     <Routes>
 
       {/* Default Route → Redirect to Login */}
-      <Route path="/" element={<Navigate to="/admin-login" replace />} />
+      <Route
+        path="/"
+        element={
+          localStorage.getItem("adminToken") ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/admin-login" replace />
+          )
+        }
+      />
 
       {/* Login Route */}
       <Route path="/admin-login" element={<AdminLogin />} />
