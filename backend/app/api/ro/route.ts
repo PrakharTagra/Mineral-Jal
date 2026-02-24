@@ -1,12 +1,37 @@
-let RO_INSTALLS: any[] = [];
-let CUSTOMERS: any[] = [];
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function getFromStorage<T>(key: string, fallback: T): T {
+  if (typeof localStorage === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveToStorage(key: string, value: unknown): void {
+  if (typeof localStorage === "undefined") return;
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+const KEYS = {
+  RO_INSTALLS: "ro_installs",
+  CUSTOMERS: "customers",
+};
+
+// ─── Handlers ───────────────────────────────────────────────────────────────
 
 export async function GET() {
-  return Response.json(RO_INSTALLS);
+  const roInstalls = getFromStorage<any[]>(KEYS.RO_INSTALLS, []);
+  return Response.json(roInstalls);
 }
 
 export async function POST(req: Request) {
   const body = await req.json();
+
+  const roInstalls = getFromStorage<any[]>(KEYS.RO_INSTALLS, []);
+  const customers = getFromStorage<any[]>(KEYS.CUSTOMERS, []);
 
   let customerData = body.customer;
 
@@ -20,7 +45,8 @@ export async function POST(req: Request) {
       reference: body.customer.reference,
     };
 
-    CUSTOMERS.push(newCustomer);
+    customers.push(newCustomer);
+    saveToStorage(KEYS.CUSTOMERS, customers);
     customerData = newCustomer;
   }
 
@@ -43,10 +69,11 @@ export async function POST(req: Request) {
     createdAt: new Date().toISOString(),
   };
 
-  RO_INSTALLS.push(newRO);
+  roInstalls.push(newRO);
+  saveToStorage(KEYS.RO_INSTALLS, roInstalls);
 
   return Response.json({
     success: true,
-    ro: newRO
+    ro: newRO,
   });
 }

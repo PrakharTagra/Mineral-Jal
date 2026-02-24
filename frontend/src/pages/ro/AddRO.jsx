@@ -14,16 +14,22 @@ const AddRO = () => {
     address: "",
     reference: "",
   });
+
+  // ── RO Details (were unconnected before) ──
+  const [roModel, setRoModel] = useState("");
+  const [installDate, setInstallDate] = useState("");
+  const [note, setNote] = useState("");
+
   const invoiceRef = useRef("");
 
   const [selectedParts, setSelectedParts] = useState([]);
   const [makingCost, setMakingCost] = useState(1000);
   const [discountPercent, setDiscountPercent] = useState("");
-  const [isSaved, setIsSaved] = useState(false);  
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const saveBill = (bill) => {
-    const existing =
-      JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
+    const existing = JSON.parse(localStorage.getItem("MJ_BILLS")) || [];
     existing.push(bill);
     localStorage.setItem("MJ_BILLS", JSON.stringify(existing));
   };
@@ -31,14 +37,10 @@ const AddRO = () => {
   const generateInvoiceNumber = (type) => {
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
-
     const key = `invoice_counter_${type}_${dateStr}`;
     const lastCount = Number(localStorage.getItem(key) || 0) + 1;
-
     localStorage.setItem(key, lastCount);
-
     const prefix = type === "SERVICE" ? "MJ-S" : "MJ-R";
-
     return `${prefix}-${dateStr}-${String(lastCount).padStart(3, "0")}`;
   };
 
@@ -46,17 +48,13 @@ const AddRO = () => {
   const togglePart = (part) => {
     setSelectedParts((prev) => {
       const exists = prev.find((p) => p.id === part.id);
-
-      if (exists) {
-        return prev.filter((p) => p.id !== part.id);
-      }
-
+      if (exists) return prev.filter((p) => p.id !== part.id);
       return [
         ...prev,
         {
           id: part.id,
           name: part.name,
-          price: String(part.price), // string for editing
+          price: String(part.price),
           basePrice: part.price,
         },
       ];
@@ -65,11 +63,8 @@ const AddRO = () => {
 
   const updatePartPrice = (id, value) => {
     if (!/^\d*$/.test(value)) return;
-
     setSelectedParts((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, price: value } : p
-      )
+      prev.map((p) => (p.id === id ? { ...p, price: value } : p))
     );
   };
 
@@ -78,35 +73,59 @@ const AddRO = () => {
     (sum, p) => sum + Number(p.price || 0),
     0
   );
-
   const discountAmount = Math.round(
     (partsTotal * (Number(discountPercent) || 0)) / 100
   );
-
-  const finalAmount =
-    partsTotal + makingCost - discountAmount;
+  const finalAmount = partsTotal + makingCost - discountAmount;
 
   /* ---------- SAVE ---------- */
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSubmitting(true);
 
     const invoiceNumber = generateInvoiceNumber("RO");
     invoiceRef.current = invoiceNumber;
 
     const payload = {
       invoiceNumber,
-      date: new Date().toISOString(),
-      type: "RO",
+      isNewCustomer,
       customer: isNewCustomer ? customer : { name: "Existing Customer" },
-      parts: selectedParts,
-      makingCost,
-      discountPercent,
+
+      model: roModel,
+      installDate,
+      note,
+
+      components: selectedParts,
+      installationCost: makingCost,
+      discountPercent: Number(discountPercent) || 0,
       discountAmount,
       totalAmount: finalAmount,
+
       startAmc: true,
     };
-    saveBill(payload);
-    setIsSaved(true);
-    navigate(`/bill/${invoiceNumber}`);
+
+    try {
+      const res = await fetch("/api/ro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Also save locally as backup
+        saveBill({ ...payload, date: new Date().toISOString(), type: "RO" });
+        setIsSaved(true);
+        navigate(`/bill/${invoiceNumber}`);
+      } else {
+        alert("Something went wrong saving the RO. Please try again.");
+      }
+    } catch (err) {
+      console.error("Failed to save RO:", err);
+      alert("Could not connect to server. Please check your connection.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isCustomerValid = isNewCustomer
@@ -114,9 +133,7 @@ const AddRO = () => {
     : true;
 
   const isFormValid =
-    isCustomerValid &&
-    selectedParts.length > 0 &&
-    makingCost >= 0;
+    isCustomerValid && selectedParts.length > 0 && makingCost >= 0;
 
   return (
     <div className="ro-container">
@@ -125,7 +142,6 @@ const AddRO = () => {
       {/* CUSTOMER */}
       <div className="card">
         <p className="label">Customer</p>
-
         <div className="toggle">
           <button
             className={!isNewCustomer ? "active" : ""}
@@ -140,7 +156,6 @@ const AddRO = () => {
             New
           </button>
         </div>
-
         {!isNewCustomer && (
           <input placeholder="Search customer by name / mobile" />
         )}
@@ -152,65 +167,59 @@ const AddRO = () => {
           <input
             placeholder="Customer Name"
             value={customer.name}
-            onChange={(e) =>
-              setCustomer({ ...customer, name: e.target.value })
-            }
+            onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
           />
           <input
             placeholder="Mobile Number"
             value={customer.phone}
-            onChange={(e) =>
-              setCustomer({ ...customer, phone: e.target.value })
-            }
+            onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
           />
           <input
             placeholder="Address"
             value={customer.address}
-            onChange={(e) =>
-              setCustomer({ ...customer, address: e.target.value })
-            }
+            onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
           />
           <input
             placeholder="Reference (optional)"
             value={customer.reference}
-            onChange={(e) =>
-              setCustomer({
-                ...customer,
-                reference: e.target.value,
-              })
-            }
+            onChange={(e) => setCustomer({ ...customer, reference: e.target.value })}
           />
         </div>
       )}
 
-      {/* RO DETAILS */}
+      {/* RO DETAILS — now connected to state */}
       <div className="card">
         <p className="label">RO Details</p>
-        <input placeholder="RO Model (Eg. AquaPro)" />
-        <input type="date" />
-        <textarea placeholder="Notes (optional)" />
+        <input
+          placeholder="RO Model (Eg. AquaPro)"
+          value={roModel}
+          onChange={(e) => setRoModel(e.target.value)}
+        />
+        <input
+          type="date"
+          value={installDate}
+          onChange={(e) => setInstallDate(e.target.value)}
+        />
+        <textarea
+          placeholder="Notes (optional)"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
       </div>
 
       {/* COMPONENTS */}
       <div className="card">
         <p className="label">RO Components</p>
-
         <div className="parts-grid">
           {RO_PARTS.map((part) => {
-            const selected = selectedParts.find(
-              (p) => p.id === part.id
-            );
-
+            const selected = selectedParts.find((p) => p.id === part.id);
             return (
               <div
                 key={part.id}
-                className={`part-item ${
-                  selected ? "selected" : ""
-                }`}
+                className={`part-item ${selected ? "selected" : ""}`}
                 onClick={() => togglePart(part)}
               >
                 <span className="part-name">{part.name}</span>
-
                 {selected ? (
                   <input
                     type="text"
@@ -219,14 +228,10 @@ const AddRO = () => {
                     value={selected.price}
                     placeholder="0"
                     onClick={(e) => e.stopPropagation()}
-                    onChange={(e) =>
-                      updatePartPrice(part.id, e.target.value)
-                    }
+                    onChange={(e) => updatePartPrice(part.id, e.target.value)}
                   />
                 ) : (
-                  <span className="part-price">
-                    ₹{part.price}
-                  </span>
+                  <span className="part-price">₹{part.price}</span>
                 )}
               </div>
             );
@@ -237,43 +242,32 @@ const AddRO = () => {
       {/* BILLING */}
       <div className="card highlight">
         <p className="label">Billing Summary</p>
-
         <div className="bill-row">
           <span>Parts Total</span>
           <strong>₹{partsTotal}</strong>
         </div>
-
         <div className="bill-input">
           <label>Making / Installation Cost (₹)</label>
           <input
             type="number"
             value={makingCost}
-            onChange={(e) =>
-              setMakingCost(Number(e.target.value) || 0)
-            }
+            onChange={(e) => setMakingCost(Number(e.target.value) || 0)}
           />
         </div>
-
         <div className="bill-input">
           <label>Discount on Parts (%)</label>
           <input
             type="number"
             placeholder="0"
             value={discountPercent}
-            onChange={(e) =>
-              setDiscountPercent(e.target.value)
-            }
+            onChange={(e) => setDiscountPercent(e.target.value)}
           />
         </div>
-
         <div className="bill-row">
           <span>Discount Amount</span>
           <strong>- ₹{discountAmount}</strong>
         </div>
-
-        <div className="bill-total">
-          Total Bill: ₹{finalAmount}
-        </div>
+        <div className="bill-total">Total Bill: ₹{finalAmount}</div>
       </div>
 
       {/* AMC INFO */}
@@ -290,10 +284,10 @@ const AddRO = () => {
       <div className="save-bar">
         <button
           className="save-btn"
-          disabled={!isFormValid}
+          disabled={!isFormValid || isSubmitting}
           onClick={handleSave}
         >
-          Save RO & Start AMC
+          {isSubmitting ? "Saving..." : "Save RO & Start AMC"}
         </button>
       </div>
     </div>
