@@ -5,3 +5,20 @@
   background: var(--bg);
   padding-bottom: 120px;
 }
+textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  resize: vertical;
+}
+.amc-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.amc-option input {
+  width: auto;
+}

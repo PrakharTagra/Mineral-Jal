@@ -1,13 +1,17 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import "./AddService.css"; // same styling as service
+import { useState, useEffect } from "react";
+import "./AddRO.css";
 import { RO_PARTS } from "../../data/roParts";
 
 const AddRO = () => {
-  const navigate = useNavigate();
-
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roName, setRoName] = useState("");
+  const [notes, setNotes] = useState("");
+  const [date, setDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [customer, setCustomer] = useState({
     name: "",
     phone: "",
@@ -15,36 +19,34 @@ const AddRO = () => {
     reference: "",
   });
 
-  const invoiceRef = useRef("");
-  const [customers, setCustomers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const [roModel, setRoModel] = useState("");
-  const [installDate, setInstallDate] = useState("");
-  const [note, setNote] = useState("");
-
-  const [selectedParts, setSelectedParts] = useState([]);
-  const [installationCost, setInstallationCost] = useState(1000);
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [startAmc, setStartAmc] = useState(true);
-
+  /* ---------------- FETCH CUSTOMERS ---------------- */
   useEffect(() => {
     if (!isNewCustomer) {
       fetch(`${import.meta.env.VITE_API_URL}/api/customers`)
-        .then(res => res.json())
-        .then(data => setCustomers(data))
-        .catch(err => console.error(err));
+        .then((res) => res.json())
+        .then((data) => setCustomers(data))
+        .catch((err) => console.error(err));
     }
   }, [isNewCustomer]);
 
+  /* ---------------- INVOICE GENERATOR ---------------- */
   const generateInvoiceNumber = () => {
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
+
     const key = `invoice_counter_RO_${dateStr}`;
     const lastCount = Number(localStorage.getItem(key) || 0) + 1;
+
     localStorage.setItem(key, lastCount);
+
     return `MJ-R-${dateStr}-${String(lastCount).padStart(3, "0")}`;
   };
+
+  /* ---------------- PARTS ---------------- */
+  const [selectedParts, setSelectedParts] = useState([]);
+  const [installationCharge, setInstallationCharge] = useState("1000");
+  const [discountPercent, setDiscountPercent] = useState("");
+  const [startAmc, setStartAmc] = useState(false);
 
   const togglePart = (part) => {
     setSelectedParts((prev) => {
@@ -79,24 +81,25 @@ const AddRO = () => {
   );
 
   const discountAmount = Math.round(
-    (partsTotal * discountPercent) / 100
+    (partsTotal * Number(discountPercent || 0)) / 100
   );
 
   const finalAmount =
-    partsTotal + installationCost - discountAmount;
+    partsTotal +
+    Number(installationCharge || 0) -
+    discountAmount;
 
+  /* ---------------- VALIDATION ---------------- */
   const isCustomerValid = isNewCustomer
-    ? customer.name.trim() !== "" &&
-      customer.phone.trim() !== ""
+    ? customer.name.trim() !== "" && customer.phone.trim() !== ""
     : selectedCustomerId !== null;
 
   const isFormValid =
-    isCustomerValid &&
-    selectedParts.length > 0 &&
-    installationCost >= 0 &&
-    roModel.trim() !== "" &&
-    installDate !== "";
+  isCustomerValid &&
+  selectedParts.length > 0 &&
+  roName.trim() !== "";
 
+  /* ---------------- SAVE ---------------- */
   const handleSave = async () => {
     const invoiceNumber = generateInvoiceNumber();
     let customerId;
@@ -118,18 +121,19 @@ const AddRO = () => {
     }
 
     const roRes = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/ro`,
+      `${import.meta.env.VITE_API_URL}/api/ros`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           invoiceNumber,
+          type: "RO",
+          date, // ✅ use selected date
           customerId,
-          model: roModel,
-          installDate,
-          note,
-          components: selectedParts,
-          installationCost,
+          roName, // ✅ added
+          notes,  // ✅ added
+          parts: selectedParts,
+          installationCharge,
           discountPercent,
           discountAmount,
           totalAmount: finalAmount,
@@ -141,7 +145,7 @@ const AddRO = () => {
     const roData = await roRes.json();
 
     if (roData.success) {
-      navigate(`/bill/${invoiceNumber}`);
+      window.location.href = `/bill/${invoiceNumber}`;
     }
   };
 
@@ -153,7 +157,7 @@ const AddRO = () => {
 
   return (
     <div className="service-container">
-      <h2 className="page-title">Add RO Installation</h2>
+      <h2 className="page-title">Add RO Sale</h2>
 
       {/* CUSTOMER SECTION */}
       <div className="card">
@@ -177,90 +181,112 @@ const AddRO = () => {
         {!isNewCustomer && (
           <>
             <input
-              placeholder="Search by name or mobile number"
+              placeholder="Search by name or mobile"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
 
             {searchTerm.trim() !== "" && (
               <div style={{ marginTop: 8 }}>
-                {filteredCustomers.length === 0 ? (
-                  <p style={{ fontSize: 12 }}>
-                    No customers found
-                  </p>
-                ) : (
-                  filteredCustomers.map((c) => (
-                    <div
-                      key={c.id}
-                      style={{
-                        padding: 8,
-                        border: "1px solid #ddd",
-                        marginBottom: 4,
-                        cursor: "pointer",
-                        background:
-                          selectedCustomerId === c.id
-                            ? "#e6f7ff"
-                            : "white",
-                      }}
-                      onClick={() => {
-                        setSelectedCustomerId(c.id);
-                        setSearchTerm(c.name);
-                      }}
-                    >
-                      <strong>{c.name}</strong>
-                      <div style={{ fontSize: 12 }}>
-                        {c.phone}
-                      </div>
+                {filteredCustomers.map((c) => (
+                  <div
+                    key={c.id}
+                    style={{
+                      padding: 8,
+                      border: "1px solid #ddd",
+                      marginBottom: 4,
+                      cursor: "pointer",
+                      background:
+                        selectedCustomerId === c.id
+                          ? "#e6f7ff"
+                          : "white",
+                    }}
+                    onClick={() => {
+                      setSelectedCustomerId(c.id);
+                      setSearchTerm(c.name);
+                    }}
+                  >
+                    <strong>{c.name}</strong>
+                    <div style={{ fontSize: 12 }}>
+                      {c.phone}
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
             )}
           </>
         )}
       </div>
 
+      {isNewCustomer && (
+        <div className="card">
+          <p className="label">New Customer Details</p>
+          <input
+            placeholder="Customer Name *"
+            value={customer.name}
+            onChange={(e) =>
+              setCustomer({ ...customer, name: e.target.value })
+            }
+          />
+          <input
+            placeholder="Mobile Number *"
+            value={customer.phone}
+            onChange={(e) =>
+              setCustomer({ ...customer, phone: e.target.value })
+            }
+          />
+          <input
+            placeholder="Address"
+            value={customer.address}
+            onChange={(e) =>
+              setCustomer({ ...customer, address: e.target.value })
+            }
+          />
+        </div>
+      )}
+      {/* DATE */}
+      <div className="card">
+        <p className="label">Sale Date</p>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </div>
       {/* RO DETAILS */}
       <div className="card">
         <p className="label">RO Details</p>
+
         <input
-          placeholder="RO Model *"
-          value={roModel}
-          onChange={(e) => setRoModel(e.target.value)}
+          placeholder="RO Model Name *"
+          value={roName}
+          onChange={(e) => setRoName(e.target.value)}
         />
-        <input
-          type="date"
-          value={installDate}
-          onChange={(e) =>
-            setInstallDate(e.target.value)
-          }
-        />
+
         <textarea
-          placeholder="Notes (optional)"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
+          placeholder="Notes (installation details, warranty, remarks)"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
         />
       </div>
-
       {/* PARTS */}
       <div className="card">
-        <p className="label">RO Components</p>
+        <p className="label">RO Parts / Products</p>
+
         <div className="parts-grid">
           {RO_PARTS.map((part) => {
             const selected = selectedParts.find(
               (p) => p.id === part.id
             );
+
             return (
               <div
                 key={part.id}
-                className={`part-item ${
-                  selected ? "selected" : ""
-                }`}
+                className={`part-item ${selected ? "selected" : ""}`}
                 onClick={() => togglePart(part)}
               >
-                <span className="part-name">
-                  {part.name}
-                </span>
+                <span className="part-name">{part.name}</span>
 
                 {selected ? (
                   <input
@@ -268,14 +294,9 @@ const AddRO = () => {
                     inputMode="numeric"
                     className="part-price-input"
                     value={selected.price}
-                    onClick={(e) =>
-                      e.stopPropagation()
-                    }
+                    onClick={(e) => e.stopPropagation()}
                     onChange={(e) =>
-                      updatePartPrice(
-                        part.id,
-                        e.target.value
-                      )
+                      updatePartPrice(part.id, e.target.value)
                     }
                   />
                 ) : (
@@ -299,15 +320,16 @@ const AddRO = () => {
         </div>
 
         <div className="bill-input">
-          <label>Installation Cost (₹)</label>
+          <label>Installation Charge (₹)</label>
           <input
             type="number"
-            value={installationCost}
-            onChange={(e) =>
-              setInstallationCost(
-                Number(e.target.value) || 0
-              )
-            }
+            value={installationCharge}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (/^\d*$/.test(val)) {
+                setInstallationCharge(val);
+              }
+            }}
           />
         </div>
 
@@ -315,12 +337,15 @@ const AddRO = () => {
           <label>Discount on Parts (%)</label>
           <input
             type="number"
+            min="0"
+            max="100"
             value={discountPercent}
-            onChange={(e) =>
-              setDiscountPercent(
-                Number(e.target.value) || 0
-              )
-            }
+            onChange={(e) => {
+              const val = e.target.value;
+              if (/^\d*$/.test(val)) {
+                setDiscountPercent(val);
+              }
+            }}
           />
         </div>
 
@@ -334,14 +359,13 @@ const AddRO = () => {
         </div>
       </div>
 
+      {/* AMC */}
       <div className="card">
         <label className="amc-option">
           <input
             type="checkbox"
             checked={startAmc}
-            onChange={() =>
-              setStartAmc(!startAmc)
-            }
+            onChange={() => setStartAmc(!startAmc)}
           />
           Start AMC for this RO
         </label>
@@ -353,7 +377,7 @@ const AddRO = () => {
           disabled={!isFormValid}
           onClick={handleSave}
         >
-          Save RO
+          Save RO Sale
         </button>
       </div>
     </div>
