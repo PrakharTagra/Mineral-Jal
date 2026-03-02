@@ -130,17 +130,6 @@ const CustomerProfile = () => {
 
               <div className="ro-actions">
                 <button
-                  className="primary"
-                  onClick={() =>
-                    navigate("/add-service", {
-                      state: { customerId: customer.id },
-                    })
-                  }
-                >
-                  ➕ Add Service
-                </button>
-
-                <button
                   className="secondary"
                   onClick={() =>
                     navigate(`/bill/${ro.invoiceNumber}`)
@@ -192,20 +181,6 @@ const CustomerProfile = () => {
             </div>
           ))
         )}
-      </div>
-
-      {/* Sticky Actions */}
-      <div className="profile-save-bar">
-        <button
-          className="primary"
-          onClick={() =>
-            navigate("/add-service", {
-              state: { customerId: customer.id },
-            })
-          }
-        >
-          ➕ Add Service
-        </button>
       </div>
     </div>
   );
