@@ -5,34 +5,46 @@ import "../../styles/ui.css";
 const BillView = () => {
   const { invoiceNumber } = useParams();
   const [bill, setBill] = useState(null);
+
   const owner = {
     name: "Mineral Jal",
-    ownerName: "Robin Taneja", // change if needed
+    ownerName: "Robin Taneja",
     phone: "+91-9205898972",
     email: "mineraljalroservices@gmail.com",
     address: "Mineral Jal Building Ghaziabad 201002",
   };
 
+  /* ===========================
+     FETCH BILL (SERVICE / RO)
+  =========================== */
   useEffect(() => {
-  if (!invoiceNumber) return;
+    if (!invoiceNumber) return;
 
-  const fetchBill = async () => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/services?invoiceNumber=${invoiceNumber}`
-      );
+    const fetchBill = async () => {
+      try {
+        let endpoint = "";
 
-      const data = await res.json();
+        if (invoiceNumber.startsWith("MJ-S")) {
+          endpoint = `/api/services?invoiceNumber=${invoiceNumber}`;
+        } else if (invoiceNumber.startsWith("MJ-R")) {
+          endpoint = `/api/ros?invoiceNumber=${invoiceNumber}`;
+        }
 
-      setBill(data || null);
-    } catch (error) {
-      console.error("Error fetching bill:", error);
-      setBill(null);
-    }
-  };
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}${endpoint}`
+        );
 
-  fetchBill();
-}, [invoiceNumber]);
+        const data = await res.json();
+        setBill(data || null);
+
+      } catch (error) {
+        console.error("Error fetching bill:", error);
+        setBill(null);
+      }
+    };
+
+    fetchBill();
+  }, [invoiceNumber]);
 
   if (!invoiceNumber) {
     return <p style={{ padding: 20 }}>Invalid invoice URL</p>;
@@ -42,26 +54,36 @@ const BillView = () => {
     return <p style={{ padding: 20 }}>Bill not found</p>;
   }
 
-  const parts = Array.isArray(bill.parts) ? bill.parts : [];
+  /* ===========================
+     CALCULATIONS
+  =========================== */
+
+  const parts = Array.isArray(bill.parts || bill.components)
+    ? bill.parts || bill.components
+    : [];
 
   const partsTotal = parts.reduce(
     (sum, p) => sum + Number(p.price || 0),
     0
   );
 
-  const extraCharge =
-    bill.type === "SERVICE"
-      ? Number(bill.serviceCharge || 0)
-      : Number(bill.makingCost || 0);
+  const isService = invoiceNumber.startsWith("MJ-S");
+
+  const extraCharge = isService
+    ? Number(bill.serviceCharge || 0)
+    : Number(bill.installationCost || 0);
 
   const subTotal = partsTotal + extraCharge;
+
+  /* ===========================
+     PRINT
+  =========================== */
   const handleDownload = () => {
     const originalTitle = document.title;
-    document.title = bill.invoiceNumber;   // 👈 filename
+    document.title = bill.invoiceNumber;
 
     window.print();
 
-    // restore title after print
     setTimeout(() => {
       document.title = originalTitle;
     }, 500);
@@ -98,7 +120,7 @@ const BillView = () => {
         {/* OWNER + CUSTOMER */}
         <div className="invoice-info">
 
-          {/* OWNER DETAILS (LEFT) */}
+          {/* OWNER */}
           <div>
             <p className="info-title">From:</p>
             <p><strong>{owner.name}</strong></p>
@@ -106,22 +128,26 @@ const BillView = () => {
             <p>Phone: {owner.phone}</p>
             <p>Email: {owner.email}</p>
             <p>{owner.address}</p>
-            {owner.gst && <p>GSTIN: {owner.gst}</p>}
           </div>
 
           {/* RIGHT SIDE */}
           <div className="invoice-right">
 
-            {/* INVOICE META */}
             <div className="invoice-meta">
               <p><strong>Invoice #:</strong> {bill.invoiceNumber}</p>
               <p>
                 <strong>Date:</strong>{" "}
-                {new Date(bill.date).toLocaleDateString()}
+                {new Date(
+                  bill.date || bill.installDate
+                ).toLocaleDateString()}
               </p>
             </div>
 
-            {/* INVOICE TO (UNDER META) */}
+            {/* Show model for RO */}
+            {!isService && (
+              <p><strong>Model:</strong> {bill.model}</p>
+            )}
+
             <div className="invoice-to">
               <p className="info-title">Invoice To:</p>
               <p><strong>{bill.customer?.name || "Customer"}</strong></p>
@@ -130,10 +156,9 @@ const BillView = () => {
             </div>
 
           </div>
-
         </div>
 
-        {/* ITEMS */}
+        {/* ITEMS TABLE */}
         <table className="invoice-table">
           <thead>
             <tr>
@@ -155,9 +180,13 @@ const BillView = () => {
 
             <tr>
               <td>{parts.length + 1}</td>
-              <td>Service Charges</td>
+              <td>
+                {isService
+                  ? "Service Charges"
+                  : "Installation Charges"}
+              </td>
               <td style={{ textAlign: "right" }}>
-                ₹{bill.serviceCharge}
+                ₹{extraCharge}
               </td>
             </tr>
 
@@ -198,6 +227,6 @@ const BillView = () => {
       </div>
     </div>
   );
-}
+};
 
 export default BillView;
