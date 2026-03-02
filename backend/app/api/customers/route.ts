@@ -1,85 +1,3 @@
-// import { CUSTOMERS } from "../storage";
-
-// const allowedOrigins = [
-//   "http://localhost:5173",
-//   "https://mineral-jal.vercel.app",
-// ];
-
-// function getCorsHeaders(origin: string | null) {
-//   const allowedOrigin =
-//     origin && allowedOrigins.includes(origin)
-//       ? origin
-//       : allowedOrigins[1];
-
-//   return {
-//     "Access-Control-Allow-Origin": allowedOrigin,
-//     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-//     "Access-Control-Allow-Headers": "Content-Type",
-//   };
-// }
-
-// /* ✅ Handle preflight */
-// export async function OPTIONS(req: Request) {
-//   const origin = req.headers.get("origin");
-
-//   return new Response(null, {
-//     status: 200,
-//     headers: getCorsHeaders(origin),
-//   });
-// }
-
-// export async function GET(req: Request) {
-//   const origin = req.headers.get("origin");
-
-//   return new Response(JSON.stringify(CUSTOMERS), {
-//     headers: getCorsHeaders(origin),
-//   });
-// }
-
-// export async function POST(req: Request) {
-//   const origin = req.headers.get("origin");
-//   const body = await req.json();
-
-//   const phone = String(body.phone).trim();
-
-//   const existingCustomer = CUSTOMERS.find(
-//     (c) => c.phone === phone
-//   );
-
-//   if (existingCustomer) {
-//     return new Response(
-//       JSON.stringify({
-//         success: true,
-//         customer: existingCustomer,
-//         message: "Customer already exists",
-//       }),
-//       {
-//         headers: getCorsHeaders(origin),
-//       }
-//     );
-//   }
-
-//   const newCustomer = {
-//     id: Date.now(),
-//     name: body.name,
-//     phone,
-//     address: body.address,
-//     reference: body.reference,
-//     services: [],
-//   };
-
-//   CUSTOMERS.push(newCustomer);
-
-//   return new Response(
-//     JSON.stringify({
-//       success: true,
-//       customer: newCustomer,
-//     }),
-//     {
-//       headers: getCorsHeaders(origin),
-//     }
-//   );
-// }
 import { CUSTOMERS } from "../storage";
 
 const allowedOrigins = [
@@ -91,16 +9,19 @@ function getCorsHeaders(origin: string | null) {
   const allowedOrigin =
     origin && allowedOrigins.includes(origin)
       ? origin
-      : allowedOrigins[1];
+      : allowedOrigins[0];
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json",
   };
 }
 
-/* ✅ Handle preflight */
+/* ===========================
+   OPTIONS (Preflight)
+=========================== */
 export async function OPTIONS(req: Request) {
   const origin = req.headers.get("origin");
 
@@ -110,7 +31,12 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-/* ✅ GET All OR By id OR By phone */
+/* ===========================
+   GET Customers
+   - /api/customers
+   - /api/customers?id=123
+   - /api/customers?phone=9876543210
+=========================== */
 export async function GET(req: Request) {
   const origin = req.headers.get("origin");
   const { searchParams } = new URL(req.url);
@@ -118,8 +44,10 @@ export async function GET(req: Request) {
   const id = searchParams.get("id");
   const phone = searchParams.get("phone");
 
+  // Return all customers
   if (!id && !phone) {
     return new Response(JSON.stringify(CUSTOMERS), {
+      status: 200,
       headers: getCorsHeaders(origin),
     });
   }
@@ -127,14 +55,18 @@ export async function GET(req: Request) {
   const customer = CUSTOMERS.find((c) => {
     if (id) return c.id === Number(id);
     if (phone) return c.phone === phone;
+    return false;
   });
 
   return new Response(JSON.stringify(customer || null), {
+    status: 200,
     headers: getCorsHeaders(origin),
   });
 }
 
-/* ✅ POST - Create Customer (No Duplicate Phone Allowed) */
+/* ===========================
+   POST Create Customer
+=========================== */
 export async function POST(req: Request) {
   const origin = req.headers.get("origin");
   const body = await req.json();
@@ -154,6 +86,7 @@ export async function POST(req: Request) {
     );
   }
 
+  // Prevent duplicate phone
   const existingCustomer = CUSTOMERS.find(
     (c) => c.phone === phone
   );
@@ -166,6 +99,7 @@ export async function POST(req: Request) {
         message: "Customer already exists",
       }),
       {
+        status: 200,
         headers: getCorsHeaders(origin),
       }
     );
@@ -173,11 +107,12 @@ export async function POST(req: Request) {
 
   const newCustomer = {
     id: Date.now(),
-    name: body.name,
+    name: body.name || "",
     phone,
-    address: body.address,
-    reference: body.reference,
-    services: [],
+    address: body.address || "",
+    reference: body.reference || "",
+    services: [],        // service IDs
+    roInstalls: [],      // ✅ correct name
     createdAt: new Date().toISOString(),
   };
 
@@ -189,6 +124,7 @@ export async function POST(req: Request) {
       customer: newCustomer,
     }),
     {
+      status: 201,
       headers: getCorsHeaders(origin),
     }
   );

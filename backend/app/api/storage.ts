@@ -1,3 +1,7 @@
+/* ===========================
+   INTERFACES
+=========================== */
+
 export interface Service {
   id: number;
   invoiceNumber: string;
@@ -9,15 +13,7 @@ export interface Service {
   discountPercent: number;
   discountAmount: number;
   totalAmount: number;
-  startAmc?: string;
-}
-
-export interface Customer {
-  id: number;
-  name: string;
-  phone: string;
-  address: string;
-  services: number[];
+  startAmc?: boolean;
 }
 
 export interface ROInstall {
@@ -36,14 +32,36 @@ export interface ROInstall {
   createdAt: string;
 }
 
-/* 👇 Extend globalThis type */
-declare global {
-  var CUSTOMERS: Customer[] | undefined;
-  var SERVICES: Service[] | undefined;
-  var RO_INSTALLS: ROInstall[] | undefined;   // ✅ ADD THIS
+export interface Customer {
+  id: number;
+  name: string;
+  phone: string;
+  address: string;
+  reference?: string;
+  services: number[];     // store service IDs
+  roInstalls: number[];   // store RO install IDs
+  createdAt: string;
 }
 
-/* 👇 Initialize if not exists */
+/* ===========================
+   GLOBAL DECLARATION
+=========================== */
+
+declare global {
+  // eslint-disable-next-line no-var
+  var CUSTOMERS: Customer[] | undefined;
+
+  // eslint-disable-next-line no-var
+  var SERVICES: Service[] | undefined;
+
+  // eslint-disable-next-line no-var
+  var RO_INSTALLS: ROInstall[] | undefined;
+}
+
+/* ===========================
+   INITIALIZATION
+=========================== */
+
 if (!globalThis.CUSTOMERS) {
   globalThis.CUSTOMERS = [];
 }
@@ -53,10 +71,13 @@ if (!globalThis.SERVICES) {
 }
 
 if (!globalThis.RO_INSTALLS) {
-  globalThis.RO_INSTALLS = [];   // ✅ ADD THIS
+  globalThis.RO_INSTALLS = [];
 }
 
-/* 👇 Export typed values */
+/* ===========================
+   EXPORTS
+=========================== */
+
 export const CUSTOMERS: Customer[] = globalThis.CUSTOMERS;
 export const SERVICES: Service[] = globalThis.SERVICES;
-export const RO_INSTALLS: ROInstall[] = globalThis.RO_INSTALLS;   // ✅ ADD THIS
+export const RO_INSTALLS: ROInstall[] = globalThis.RO_INSTALLS;

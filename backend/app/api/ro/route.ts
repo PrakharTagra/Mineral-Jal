@@ -35,7 +35,14 @@ export async function GET(req: Request) {
 
     return {
       ...ro,
-      customer: customer || null,
+      customer: customer
+      ? {
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone,
+          address: customer.address,
+        }
+      : null
     };
   });
 
@@ -122,8 +129,12 @@ export async function POST(req: Request) {
 
   RO_INSTALLS.push(newRO);
 
-  // 🔥 Link RO to customer (important)
-  customer.services.push(newROId);
+  // ✅ Correct linking
+  if (!customer.roInstalls) {
+    customer.roInstalls = [];
+  }
+
+  customer.roInstalls.push(newROId);
 
   return new Response(
     JSON.stringify({
@@ -131,6 +142,7 @@ export async function POST(req: Request) {
       ro: newRO,
     }),
     {
+      status: 201,
       headers: getCorsHeaders(origin),
     }
   );
