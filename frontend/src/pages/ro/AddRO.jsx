@@ -121,7 +121,7 @@ const AddRO = () => {
     }
 
     const roRes = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/ros`,
+      `${import.meta.env.VITE_API_URL}/api/ro`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
