@@ -127,14 +127,16 @@ const AddRO = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           invoiceNumber,
-          type: "RO",
-          date, // ✅ use selected date
           customerId,
-          roName, // ✅ added
-          notes,  // ✅ added
-          parts: selectedParts,
-          installationCharge,
-          discountPercent,
+
+          // 🔥 FIXED FIELD NAMES
+          model: roName,
+          installDate: date,
+          note: notes,
+          components: selectedParts,
+          installationCost: Number(installationCharge || 0),
+
+          discountPercent: Number(discountPercent || 0),
           discountAmount,
           totalAmount: finalAmount,
           startAmc,
