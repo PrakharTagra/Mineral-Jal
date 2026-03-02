@@ -27,7 +27,7 @@ const BillView = () => {
         if (invoiceNumber.startsWith("MJ-S")) {
           endpoint = `/api/services?invoiceNumber=${invoiceNumber}`;
         } else if (invoiceNumber.startsWith("MJ-R")) {
-          endpoint = `/api/ros?invoiceNumber=${invoiceNumber}`;
+          endpoint = `/api/ro?invoiceNumber=${invoiceNumber}`;
         }
 
         const res = await fetch(
