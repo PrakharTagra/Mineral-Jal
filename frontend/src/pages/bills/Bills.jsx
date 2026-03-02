@@ -10,26 +10,51 @@ const Bills = () => {
   // );
 
   useEffect(() => {
-    const fetchBills = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/services`
-        );
-        const data = await res.json();
+  const fetchBills = async () => {
+    try {
+      const [serviceRes, roRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/api/services`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/ro`)
+      ]);
 
-        // latest first
-        const sorted = data.sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
-        );
+      const services = await serviceRes.json();
+      const ros = await roRes.json();
 
-        setBills(sorted);
-      } catch (error) {
-        console.error("Error fetching bills:", error);
-      }
-    };
+      // Normalize services
+      const normalizedServices = services.map((s) => ({
+        ...s,
+        type: "SERVICE",
+        displayDate: s.date,
+      }));
 
-    fetchBills();
-  }, []);
+      // Normalize RO
+      const normalizedROs = ros.map((r) => ({
+        ...r,
+        type: "RO",
+        displayDate: r.installDate,
+      }));
+
+      const combined = [
+        ...normalizedServices,
+        ...normalizedROs,
+      ];
+
+      // Sort latest first
+      combined.sort(
+        (a, b) =>
+          new Date(b.displayDate) -
+          new Date(a.displayDate)
+      );
+
+      setBills(combined);
+
+    } catch (error) {
+      console.error("Error fetching bills:", error);
+    }
+  };
+
+  fetchBills();
+}, []);
 
   const filteredBills =
     activeTab === "ALL"
@@ -81,7 +106,7 @@ const Bills = () => {
                 {bill.customer?.name || "Customer"}
               </p>
               <p className="date">
-                {new Date(bill.date).toLocaleDateString()}
+                {new Date(bill.displayDate).toLocaleDateString()}
               </p>
             </div>
 
