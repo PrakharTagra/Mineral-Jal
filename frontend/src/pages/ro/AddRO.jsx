@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import "./AddRO.css";
 import { RO_PARTS } from "../../data/roParts";
+import { useLocation } from "react-router-dom";
 
 const AddRO = () => {
+  const location = useLocation();
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [customers, setCustomers] = useState([]);
@@ -20,6 +22,12 @@ const AddRO = () => {
   });
 
   /* ---------------- FETCH CUSTOMERS ---------------- */
+  useEffect(() => {
+    if (location.state?.customerId) {
+      setSelectedCustomerId(location.state.customerId);
+      setIsNewCustomer(false);
+    }
+  }, [location.state]);
   useEffect(() => {
     if (!isNewCustomer) {
       fetch(`${import.meta.env.VITE_API_URL}/api/customers`)

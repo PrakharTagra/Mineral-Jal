@@ -1,6 +1,7 @@
 import { useState,useRef,useEffect } from "react";
 import "./AddService.css";
 import { RO_PARTS } from "../../data/roParts";
+import { useLocation } from "react-router-dom";
 
 const AddService = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
@@ -14,7 +15,15 @@ const AddService = () => {
   const invoiceRef = useRef("");
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
 
+
+  useEffect(() => {
+    if (location.state?.customerId) {
+      setSelectedCustomerId(location.state.customerId);
+      setIsNewCustomer(false);
+    }
+  }, [location.state]);
   useEffect(() => {
     if (!isNewCustomer) {
       fetch(`${import.meta.env.VITE_API_URL}/api/customers`)

@@ -139,6 +139,15 @@ const CustomerProfile = () => {
                 >
                   ➕ Add Service
                 </button>
+
+                <button
+                  className="secondary"
+                  onClick={() =>
+                    navigate(`/bill/${ro.invoiceNumber}`)
+                  }
+                >
+                  🧾 Download Bill
+                </button>
               </div>
             </div>
           ))
@@ -165,9 +174,21 @@ const CustomerProfile = () => {
                     .join(", ") || "-"}
                 </p>
               </div>
-              <span className="cost">
-                ₹{service.totalAmount}
-              </span>
+
+              <div className="service-actions">
+                <span className="cost">
+                  ₹{service.totalAmount}
+                </span>
+
+                <button
+                  className="secondary"
+                  onClick={() =>
+                    navigate(`/bill/${service.invoiceNumber}`)
+                  }
+                >
+                  🧾 Download Bill
+                </button>
+              </div>
             </div>
           ))
         )}
