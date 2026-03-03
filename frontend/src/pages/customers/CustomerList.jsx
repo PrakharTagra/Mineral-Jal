@@ -56,7 +56,7 @@ const CustomerList = () => {
           <div
             key={c.id}
             className="customer-card"
-            onClick={() => navigate(`/customer/${c.id}`)}
+            onClick={() => navigate(`/customer/${c._id}`)}
           >
             <div>
               <p className="customer-name">
