@@ -1,106 +1,159 @@
-/* Container */
+/* ===== Layout ===== */
 .profile-container {
-  padding: 16px;
-  max-width: 480px;
+  padding: 20px;
+  max-width: 520px;
   margin: auto;
-  padding-bottom: 110px;
-  background: #f3f4f6;
-  color: #111827;
+  padding-bottom: 120px;
+  background: #f9fafb;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
 }
 
-/* Heading */
+/* ===== Heading ===== */
+.page-title,
 h2 {
-  margin-bottom: 16px;
-  color: #111827;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #0f172a;
 }
 
-/* Card */
+/* ===== Card ===== */
 .card {
   background: #ffffff;
-  padding: 16px;
-  border-radius: 16px;
-  margin-bottom: 14px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  padding: 18px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
-/* Text */
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* ===== Text ===== */
 .title {
   font-size: 18px;
-  font-weight: 600;
-  color: #111827;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
 }
 
 .muted {
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
+  margin-top: 2px;
 }
 
-/* Call / WhatsApp */
+/* ===== Contact Buttons ===== */
 .actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .actions button {
   flex: 1;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  font-weight: 500;
-  color: #111827;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-weight: 600;
+  color: #0f172a;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .actions button:hover {
-  background: #f3f4f6;
+  background: #e2e8f0;
 }
 
-/* Section titles */
+/* ===== Section Title ===== */
 .section-title {
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #111827;
-}
-
-/* RO item */
-.ro-item {
-  background: #f1f5f9;
-  border-radius: 14px;
-  padding: 14px;
+  font-weight: 700;
+  font-size: 15px;
   margin-bottom: 12px;
+  color: #0f172a;
 }
 
-/* RO action buttons */
-.ro-actions {
+/* ===== RO & Service Items (Unified Style) ===== */
+.ro-item,
+.service-item {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.ro-item:hover,
+.service-item:hover {
+  background: #f1f5f9;
+}
+
+/* ===== RO Actions ===== */
+.ro-actions,
+.service-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 12px;
+  align-items: center;
 }
 
-.ro-actions button {
-  padding: 6px 12px;
+/* ===== Buttons ===== */
+.ro-actions button,
+.service-actions button {
+  padding: 8px 14px;
   font-size: 12px;
-  border-radius: 10px;
-  border: 1px solid #cbd5f5;
-  background: #ffffff;
-  color: #1e3a8a;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.ro-actions button:hover {
-  background: #eef2ff;
-}
-
-/* Status badges */
-.status {
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
+  border-radius: 12px;
+  border: none;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* ===== Primary Button ===== */
+.primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+}
+
+/* ===== Secondary Button ===== */
+.secondary {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+}
+
+.secondary:hover {
+  transform: translateY(-1px);
+}
+
+/* ===== Cost Badge ===== */
+.cost {
+  font-weight: 700;
+  color: #0f172a;
+  background: #ffffff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+}
+
+/* ===== Status Badges ===== */
+.status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
   display: inline-block;
+  margin-left: 4px;
 }
 
 .status.active {
@@ -118,71 +171,24 @@ h2 {
   color: #92400e;
 }
 
-/* Service history */
-.service-item {
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.cost {
-  font-weight: 600;
-  color: #111827;
-  white-space: nowrap;
-}
-
-/* Sticky bottom bar */
+/* ===== Sticky Bottom Bar ===== */
 .profile-save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 520px;
+  margin: auto;
   background: #ffffff;
-  padding: 12px;
+  padding: 14px 16px;
   display: flex;
   gap: 12px;
-  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 }
 
-/* Bottom primary actions */
-.primary {
-  flex: 1;
-  padding: 14px;
-  border-radius: 16px;
-  border: none;
-  background: #2563eb;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.secondary {
-  flex: 1;
-  padding: 14px;
-  border-radius: 16px;
-  border: none;
-  background: #16a34a;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.primary:hover {
-  background: #1d4ed8;
-}
-
-.secondary:hover {
-  background: #15803d;
-}
-
+/* ===== Clickable Effect ===== */
 .clickable {
   cursor: pointer;
-}
-.page-title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #111827;
 }
