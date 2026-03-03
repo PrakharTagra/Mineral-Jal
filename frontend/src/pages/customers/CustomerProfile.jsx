@@ -1,6 +1,7 @@
 import "./CustomerProfile.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Loader from "../../components/Loader"; // adjust path
 
 const CustomerProfile = () => {
   const navigate = useNavigate();
@@ -16,37 +17,39 @@ const CustomerProfile = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch customer
-        const customerRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/customers?id=${id}`
-        );
-        const customerData = await customerRes.json();
-        setCustomer(customerData);
+        setLoading(true);
 
-        // Fetch RO
-        const roRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/ro`
-        );
+        const [customerRes, roRes, serviceRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL}/api/customers?id=${id}`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/ro`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/services`)
+        ]);
+
+        const customerData = await customerRes.json();
         const roData = await roRes.json();
+        const serviceData = await serviceRes.json();
+
+        if (!customerData) {
+          setCustomer(null);
+          return;
+        }
+
+        setCustomer(customerData);
 
         const customerROs = roData.filter(
           (r) => String(r.customerId?._id) === String(id)
         );
-        setRos(customerROs);
-
-        // Fetch services
-        const serviceRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/services`
-        );
-        const serviceData = await serviceRes.json();
 
         const customerServices = serviceData.filter(
           (s) => String(s.customerId?._id) === String(id)
         );
+
+        setRos(customerROs);
         setServices(customerServices);
 
       } catch (err) {
         console.error("Error fetching profile:", err);
+        setCustomer(null);
       } finally {
         setLoading(false);
       }
@@ -55,23 +58,30 @@ const CustomerProfile = () => {
     fetchData();
   }, [id]);
 
-  if (loading) {
-    return <div className="profile-container">Loading...</div>;
-  }
+  /* =========================
+     Render Logic (Important)
+  ========================== */
 
-  if (!customer) {
-    return <div className="profile-container">Customer not found</div>;
-  }
+  if (loading) return <Loader />;
+
+  if (!customer)
+    return (
+      <div className="profile-container">
+        <h2>Customer Profile</h2>
+        <div className="empty-state">Customer not found</div>
+      </div>
+    );
 
   return (
     <div className="profile-container">
-      <h2>Customer Profile</h2>
+      <h2 className="page-title">Customer Profile</h2>
 
       {/* Customer Info */}
       <div className="card">
         <p className="title">{customer.name}</p>
         <p>{customer.phone}</p>
         <p>{customer.address}</p>
+
         {customer.reference && (
           <p className="muted">
             Reference: {customer.reference}
@@ -79,18 +89,13 @@ const CustomerProfile = () => {
         )}
 
         <div className="actions">
-          <button
-            onClick={() => window.open(`tel:${customer.phone}`)}
-          >
+          <button onClick={() => window.open(`tel:${customer.phone}`)}>
             📞 Call
           </button>
 
           <button
             onClick={() =>
-              window.open(
-                `https://wa.me/91${customer.phone}`,
-                "_blank"
-              )
+              window.open(`https://wa.me/91${customer.phone}`, "_blank")
             }
           >
             💬 WhatsApp
@@ -109,6 +114,7 @@ const CustomerProfile = () => {
             <div key={ro._id} className="ro-item">
               <div>
                 <strong>{ro.model || "RO Model"}</strong>
+
                 <p className="muted">
                   Installed on:{" "}
                   {ro.installDate
@@ -153,14 +159,13 @@ const CustomerProfile = () => {
           services.map((service) => (
             <div key={service._id} className="service-item">
               <div>
-                <strong>  
+                <strong>
                   {new Date(service.date).toLocaleDateString()}
                 </strong>
+
                 <p className="muted">
                   Parts:{" "}
-                  {service.parts
-                    ?.map((p) => p.name)
-                    .join(", ") || "-"}
+                  {service.parts?.map((p) => p.name).join(", ") || "-"}
                 </p>
               </div>
 

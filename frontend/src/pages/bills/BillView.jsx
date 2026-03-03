@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../../styles/ui.css";
+import Loader from "../../components/Loader";
 
 const BillView = () => {
   const { invoiceNumber } = useParams();
   const [bill, setBill] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const owner = {
     name: "Mineral Jal",
@@ -17,11 +19,13 @@ const BillView = () => {
   /* ===========================
      FETCH BILL
   =========================== */
-  useEffect(() => {
+useEffect(() => {
   if (!invoiceNumber) return;
 
   const fetchBill = async () => {
     try {
+      setLoading(true);
+
       let endpoint = "";
 
       if (invoiceNumber.startsWith("MJ-S")) {
@@ -41,11 +45,8 @@ const BillView = () => {
 
       const data = await res.json();
 
-      // 🔥 If API returns array → take first element
       if (Array.isArray(data)) {
         setBill(data[0] || null);
-      } else if (data?.ro) {
-        setBill(data.ro);
       } else {
         setBill(data);
       }
@@ -53,6 +54,8 @@ const BillView = () => {
     } catch (error) {
       console.error("Error fetching bill:", error);
       setBill(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,6 +66,7 @@ const BillView = () => {
     return <p style={{ padding: 20 }}>Invalid invoice URL</p>;
   }
 
+  if (loading) return <Loader />; 
   if (!bill) {
     return <p style={{ padding: 20 }}>Bill not found</p>;
   }

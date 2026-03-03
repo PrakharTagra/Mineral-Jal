@@ -1,51 +1,93 @@
+/* Container */
 .customer-list-container {
-  padding: 16px;
-  max-width: 480px;
+  padding: 20px;
+  max-width: 520px;
   margin: auto;
-  padding-bottom: 90px;
-  background: #f3f4f6;
+  padding-bottom: 110px;
+
+  /* soft modern gradient background */
+  background: linear-gradient(
+    180deg,
+    #f8fafc 0%,
+    #eef2f7 100%
+  );
+
+  min-height: 100vh;
 }
 
-/* Reuse global rule */
+/* Page Title */
 .page-title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #111827;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #0f172a;
+  letter-spacing: -0.3px;
 }
 
-/* Customer card */
+/* Customer Card */
 .customer-card {
-  background: #ffffff;
-  padding: 14px 16px;
-  border-radius: 14px;
-  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+
+  padding: 18px 18px;
+  border-radius: 18px;
+  margin-bottom: 14px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  border: 1px solid rgba(226, 232, 240, 0.7);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.05),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+
+  transition: all 0.25s cubic-bezier(.4,0,.2,1);
 }
 
+/* Hover Effect */
 .customer-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 24px rgba(15, 23, 42, 0.08),
+    0 4px 8px rgba(15, 23, 42, 0.06);
+
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
-/* Text */
+/* Text Content */
 .customer-name {
   font-weight: 600;
-  color: #111827;
+  font-size: 16px;
+  color: #0f172a;
+  margin-bottom: 4px;
 }
 
 .customer-phone {
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
+  font-weight: 500;
 }
 
 /* Arrow */
 .arrow {
   font-size: 22px;
-  color: #9ca3af;
+  color: #94a3b8;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.customer-card:hover .arrow {
+  transform: translateX(4px);
+  color: #2563eb;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #64748b;
+  font-size: 14px;
 }
