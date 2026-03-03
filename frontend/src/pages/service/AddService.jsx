@@ -4,7 +4,7 @@ import { RO_PARTS } from "../../data/roParts";
 import { useLocation } from "react-router-dom";
 
 const AddService = () => {
-  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [customer, setCustomer] = useState({
     name: "",
@@ -112,7 +112,7 @@ const handleSave = async () => {
     );
 
     const customerData = await customerRes.json();
-    customerId = customerData.customer.id;
+    customerId = customerData.customer._id;
   } 
 
   else {
@@ -201,19 +201,19 @@ const handleSave = async () => {
               ) : (
                 filteredCustomers.map((c) => (
                   <div
-                    key={c.id}
+                    key={c._id}
                     style={{
                       padding: 8,
                       border: "1px solid #ddd",
                       marginBottom: 4,
                       cursor: "pointer",
                       background:
-                        selectedCustomerId === c.id
+                        selectedCustomerId === c._id
                           ? "#e6f7ff"
                           : "white",
                     }}
                     onClick={() => {
-                      setSelectedCustomerId(c.id);
+                      setSelectedCustomerId(c._id);
                       setSearchTerm(c.name); // show selected name in input
                     }}
                   >
