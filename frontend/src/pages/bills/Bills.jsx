@@ -103,7 +103,7 @@ const Bills = () => {
 
             <div className="bill-middle">
               <p className="customer">
-                {bill.customer?.name || "Customer"}
+                {bill.customerId?.name || "Customer"}
               </p>
               <p className="date">
                 {new Date(bill.displayDate).toLocaleDateString()}
