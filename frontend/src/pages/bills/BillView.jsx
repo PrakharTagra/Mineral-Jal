@@ -167,9 +167,9 @@ const BillView = () => {
 
             <div className="invoice-to">
               <p className="info-title">Invoice To:</p>
-              <p><strong>{bill.customer?.name || "Customer"}</strong></p>
-              <p>{bill.customer?.phone || "-"}</p>
-              <p>{bill.customer?.address || "-"}</p>
+              <p><strong>{bill.customerId?.name || "Customer"}</strong></p>
+              <p>{bill.customerId?.phone || "-"}</p>
+              <p>{bill.customerId?.address || "-"}</p>
             </div>
 
           </div>

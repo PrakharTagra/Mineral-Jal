@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 
 const AddRO = () => {
   const location = useLocation();
-  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -123,7 +123,7 @@ const AddRO = () => {
       );
 
       const customerData = await customerRes.json();
-      customerId = customerData.customer.id;
+      customerId = customerData.customer._id;
     } else {
       customerId = selectedCustomerId;
     }
@@ -200,19 +200,19 @@ const AddRO = () => {
               <div style={{ marginTop: 8 }}>
                 {filteredCustomers.map((c) => (
                   <div
-                    key={c.id}
+                    key={c._id}
                     style={{
                       padding: 8,
                       border: "1px solid #ddd",
                       marginBottom: 4,
                       cursor: "pointer",
                       background:
-                        selectedCustomerId === c.id
+                        selectedCustomerId === c._id
                           ? "#e6f7ff"
                           : "white",
                     }}
                     onClick={() => {
-                      setSelectedCustomerId(c.id);
+                      setSelectedCustomerId(c._id);
                       setSearchTerm(c.name);
                     }}
                   >

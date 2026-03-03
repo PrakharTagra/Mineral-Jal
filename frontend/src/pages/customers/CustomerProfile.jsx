@@ -30,7 +30,7 @@ const CustomerProfile = () => {
         const roData = await roRes.json();
 
         const customerROs = roData.filter(
-          (r) => String(r.customerId) === String(id)
+          (r) => String(r.customerId?._id) === String(id)
         );
         setRos(customerROs);
 
@@ -41,7 +41,7 @@ const CustomerProfile = () => {
         const serviceData = await serviceRes.json();
 
         const customerServices = serviceData.filter(
-          (s) => String(s.customerId) === String(id)
+          (s) => String(s.customerId?._id) === String(id)
         );
         setServices(customerServices);
 
@@ -106,7 +106,7 @@ const CustomerProfile = () => {
           <p className="muted">No RO installed</p>
         ) : (
           ros.map((ro) => (
-            <div key={ro.id} className="ro-item">
+            <div key={ro._id} className="ro-item">
               <div>
                 <strong>{ro.model || "RO Model"}</strong>
                 <p className="muted">
@@ -151,9 +151,9 @@ const CustomerProfile = () => {
           <p className="muted">No service history</p>
         ) : (
           services.map((service) => (
-            <div key={service.id} className="service-item">
+            <div key={service._id} className="service-item">
               <div>
-                <strong>
+                <strong>  
                   {new Date(service.date).toLocaleDateString()}
                 </strong>
                 <p className="muted">
