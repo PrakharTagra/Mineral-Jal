@@ -88,13 +88,11 @@ export async function GET(req: Request) {
 =========================== */
 
 export async function POST(req: Request) {
-
   await connectDB();
 
   const origin = req.headers.get("origin");
 
   try {
-
     const body = await req.json();
 
     const {
@@ -115,10 +113,7 @@ export async function POST(req: Request) {
           success: false,
           message: "Customer is required",
         }),
-        {
-          status: 400,
-          headers: getCorsHeaders(origin),
-        }
+        { status: 400, headers: getCorsHeaders(origin) }
       );
     }
 
@@ -130,87 +125,59 @@ export async function POST(req: Request) {
           success: false,
           message: "Customer not found",
         }),
-        {
-          status: 404,
-          headers: getCorsHeaders(origin),
-        }
+        { status: 404, headers: getCorsHeaders(origin) }
       );
     }
 
+    /* NORMALIZE PARTS */
+    const safeParts = (parts || []).map((p: any) => ({
+      id: Number(p.id || 0),
+      name: p.name || "",
+      price: Number(p.price || 0),
+      quantity: Number(p.quantity || 1),
+    }));
+
     /* CREATE SERVICE */
-
     const newService = await Service.create({
-
       invoiceNumber,
       customerId,
-      date,
-
-      parts: (parts || []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        price: Number(p.price || 0),
-        quantity: Number(p.quantity || 1),
-      })),
-
+      date: new Date(date || new Date()),
+      parts: safeParts,
       serviceCharge: Number(serviceCharge || 0),
       discountPercent: Number(discountPercent || 0),
       discountAmount: Number(discountAmount || 0),
       totalAmount: Number(totalAmount || 0),
-
       startAmc: Boolean(startAmc),
-
     });
 
-    /* ===========================
-       CREATE AMC
-    =========================== */
-
+    /* CREATE AMC IF SELECTED */
     if (startAmc) {
+      const start = new Date(date || new Date());
 
-      const existingAMC = await AMC.findOne({
+      const addMonths = (d: Date, m: number) => {
+        const x = new Date(d);
+        x.setMonth(x.getMonth() + m);
+        return x;
+      };
+
+      await AMC.create({
         customerId,
-        serviceId: newService._id,
+        serviceId: newService._id,   // ensure AMC schema has this field
+        startDate: start,
+        fourMonth: {
+          date: addMonths(start, 4),
+          completed: false,
+        },
+        eightMonth: {
+          date: addMonths(start, 8),
+          completed: false,
+        },
+        twelveMonth: {
+          date: addMonths(start, 12),
+          completed: false,
+        },
         status: "ACTIVE",
       });
-
-      if (!existingAMC) {
-
-        const start = new Date(date || new Date());
-
-        const addMonths = (date: Date, months: number) => {
-          const d = new Date(date);
-          d.setMonth(d.getMonth() + months);
-          return d;
-        };
-
-        await AMC.create({
-
-          customerId,
-          serviceId: newService._id,
-
-          startDate: start,
-
-          fourMonth: {
-            date: addMonths(start, 4),
-            completed: false,
-          },
-
-          eightMonth: {
-            date: addMonths(start, 8),
-            completed: false,
-          },
-
-          twelveMonth: {
-            date: addMonths(start, 12),
-            completed: false,
-          },
-
-          status: "ACTIVE",
-
-        });
-
-      }
-
     }
 
     return new Response(
@@ -218,27 +185,19 @@ export async function POST(req: Request) {
         success: true,
         service: newService,
       }),
-      {
-        status: 201,
-        headers: getCorsHeaders(origin),
-      }
+      { status: 201, headers: getCorsHeaders(origin) }
     );
 
   } catch (error) {
-
     console.error("SERVICE CREATE ERROR:", error);
 
     return new Response(
       JSON.stringify({
         success: false,
         message: "Service creation failed",
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? error.message : String(error),
       }),
-      {
-        status: 500,
-        headers: getCorsHeaders(origin),
-      }
+      { status: 500, headers: getCorsHeaders(origin) }
     );
-
   }
 }
