@@ -4,6 +4,7 @@ import Loader from "../../components/Loader";
 import "./AmcDetails.css";
 
 const AmcDetails = () => {
+
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -11,7 +12,9 @@ const AmcDetails = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchAMC = async () => {
+
     try {
+
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/amcs`
       );
@@ -21,18 +24,26 @@ const AmcDetails = () => {
       const selected = data.find((a) => a._id === id);
 
       setAmc(selected);
+
     } catch (error) {
+
       console.error(error);
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
   useEffect(() => {
+
     fetchAMC();
+
   }, [id]);
 
   const renewAMC = async () => {
+
     await fetch(
       `${import.meta.env.VITE_API_URL}/api/amcs/renew`,
       {
@@ -66,20 +77,29 @@ const AmcDetails = () => {
 
       <h2>AMC Details</h2>
 
-      {/* Customer Info */}
-      <div className="card">
-        <p className="title">{amc.customerId?.name}</p>
+      {/* CUSTOMER INFO */}
 
-        <p>{amc.roId?.model}</p>
+      <div className="card">
+
+        <p className="title">
+          {amc.customerId?.name}
+        </p>
+
+        <p>
+          RO Model: {amc.roId?.model}
+        </p>
 
         <p>
           Start Date:{" "}
           {new Date(amc.startDate).toLocaleDateString()}
         </p>
+
       </div>
 
-      {/* Service Checkpoints */}
+      {/* SERVICE CHECKPOINTS */}
+
       <div className="card">
+
         <h3>Service Checkpoints</h3>
 
         {checkpoints.map((cp) => {
@@ -94,9 +114,13 @@ const AmcDetails = () => {
             today > new Date(dueDate - 10 * 86400000);
 
           return (
-            <div className="checkpoint" key={cp.key}>
+            <div
+              className="checkpoint"
+              key={cp.key}
+            >
 
               <div>
+
                 <strong>{cp.label}</strong>
 
                 <p className="muted">
@@ -112,20 +136,17 @@ const AmcDetails = () => {
                   </p>
                 )}
 
+                {/* Parts Replaced */}
+
                 {data?.partsUsed?.length > 0 && (
                   <p className="muted">
-                    Parts:{" "}
+                    Parts Replaced:{" "}
                     {data.partsUsed
                       .map((p) => p.name)
                       .join(", ")}
                   </p>
                 )}
 
-                {data?.billAmount > 0 && (
-                  <p className="muted">
-                    Bill: ₹{data.billAmount}
-                  </p>
-                )}
               </div>
 
               {!completed && dueSoon && (
@@ -150,18 +171,24 @@ const AmcDetails = () => {
             </div>
           );
         })}
+
       </div>
 
-      {/* Renew AMC */}
+      {/* AMC RENEWAL */}
+
       {today > new Date(amc.twelveMonth?.date) && (
+
         <div className="card">
+
           <button
             className="renew-btn"
             onClick={renewAMC}
           >
             Renew AMC
           </button>
+
         </div>
+
       )}
 
     </div>

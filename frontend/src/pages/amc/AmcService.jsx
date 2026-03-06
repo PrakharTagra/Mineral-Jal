@@ -9,11 +9,10 @@ const AmcService = () => {
 
   const [selectedParts, setSelectedParts] = useState([]);
   const [notes, setNotes] = useState("");
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [serviceCharge, setServiceCharge] = useState(0);
 
   const togglePart = (part) => {
     setSelectedParts((prev) => {
+
       const exists = prev.find((p) => p.id === part.id);
 
       if (exists) {
@@ -26,12 +25,14 @@ const AmcService = () => {
           id: part.id,
           name: part.name,
           price: String(part.price),
+          quantity: 1,
         },
       ];
     });
   };
 
   const updatePartPrice = (id, value) => {
+
     if (!/^\d*$/.test(value)) return;
 
     setSelectedParts((prev) =>
@@ -41,17 +42,27 @@ const AmcService = () => {
     );
   };
 
-  const partsTotal = selectedParts.reduce(
-    (sum, part) => sum + Number(part.price || 0),
-    0
-  );
+  const increaseQty = (id) => {
 
-  const discountAmount = Math.round(
-    (partsTotal * discountPercent) / 100
-  );
+    setSelectedParts((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, quantity: p.quantity + 1 }
+          : p
+      )
+    );
+  };
 
-  const finalAmount =
-    partsTotal + serviceCharge - discountAmount;
+  const decreaseQty = (id) => {
+
+    setSelectedParts((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, quantity: Math.max(1, p.quantity - 1) }
+          : p
+      )
+    );
+  };
 
   const handleSave = async () => {
 
@@ -67,7 +78,6 @@ const AmcService = () => {
           checkpoint,
           partsUsed: selectedParts,
           notes,
-          billAmount: finalAmount,
         }),
       }
     );
@@ -109,23 +119,55 @@ const AmcService = () => {
                 </span>
 
                 {selected ? (
-                  <input
-                    className="part-price-input"
-                    value={selected.price}
-                    onClick={(e) =>
-                      e.stopPropagation()
-                    }
-                    onChange={(e) =>
-                      updatePartPrice(
-                        part.id,
-                        e.target.value
-                      )
-                    }
-                  />
+
+                  <div
+                    className="part-controls"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+
+                    <input
+                      className="part-price-input"
+                      value={selected.price}
+                      onChange={(e) =>
+                        updatePartPrice(
+                          part.id,
+                          e.target.value
+                        )
+                      }
+                    />
+
+                    <div className="qty-control">
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          decreaseQty(part.id)
+                        }
+                      >
+                        −
+                      </button>
+
+                      <span>{selected.quantity}</span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          increaseQty(part.id)
+                        }
+                      >
+                        +
+                      </button>
+
+                    </div>
+
+                  </div>
+
                 ) : (
+
                   <span className="part-price">
                     ₹{part.price}
                   </span>
+
                 )}
 
               </div>
@@ -133,9 +175,11 @@ const AmcService = () => {
           })}
 
         </div>
+
       </div>
 
       {/* NOTES */}
+
       <div className="card">
 
         <p className="label">Service Notes</p>
@@ -150,62 +194,17 @@ const AmcService = () => {
 
       </div>
 
-      {/* BILLING */}
-      <div className="card highlight">
-
-        <p className="label">Billing Summary</p>
-
-        <div className="bill-row">
-          <span>Parts Total</span>
-          <strong>₹{partsTotal}</strong>
-        </div>
-
-        <div className="bill-input">
-          <label>Service Charge</label>
-
-          <input
-            type="number"
-            value={serviceCharge}
-            onChange={(e) =>
-              setServiceCharge(
-                Number(e.target.value) || 0
-              )
-            }
-          />
-        </div>
-
-        <div className="bill-input">
-          <label>Discount (%)</label>
-
-          <input
-            type="number"
-            value={discountPercent}
-            onChange={(e) =>
-              setDiscountPercent(
-                Number(e.target.value) || 0
-              )
-            }
-          />
-        </div>
-
-        <div className="bill-row">
-          <span>Discount</span>
-          <strong>-₹{discountAmount}</strong>
-        </div>
-
-        <div className="bill-total">
-          Total Bill: ₹{finalAmount}
-        </div>
-
-      </div>
+      {/* ACTION */}
 
       <div className="save-bar">
+
         <button
           className="save-btn"
           onClick={handleSave}
         >
           Complete Service
         </button>
+
       </div>
 
     </div>
