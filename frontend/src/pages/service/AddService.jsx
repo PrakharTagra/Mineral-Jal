@@ -56,7 +56,7 @@ const AddService = () => {
   const [startAmc, setStartAmc] = useState(false);
 
   const togglePart = (part) => {
-    const id = Number(part.id);
+    const id = part.id;
 
     setSelectedParts((prev) => {
       const exists = prev.find((p) => p.id === id);
@@ -330,7 +330,7 @@ const decreaseQty = (id) => {
 
         <div className="parts-grid">
           {RO_PARTS.map((part) => {
-          const id = Number(part.id);   // compute once
+          const id = part.id;   // compute once
 
           const selected = selectedParts.find(
             (p) => p.id === id
