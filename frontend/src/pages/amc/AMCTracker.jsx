@@ -35,9 +35,12 @@ const AMCTracker = () => {
   if (loading) return <Loader />;
 
   const filtered = amcs.filter((a) => {
-    if (tab === "ACTIVE") return a.status === "ACTIVE";
-    if (tab === "DUE") return a.status === "DUE";
-    if (tab === "EXPIRED") return a.status === "EXPIRED";
+    const status = a.status?.toUpperCase();
+
+    if (tab === "ACTIVE") return status === "ACTIVE";
+    if (tab === "DUE") return status === "DUE";
+    if (tab === "EXPIRED") return status === "EXPIRED";
+
     return false;
   });
 
