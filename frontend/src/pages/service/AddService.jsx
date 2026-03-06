@@ -12,7 +12,6 @@ const AddService = () => {
     address: "",
     reference: "",
   });
-  const invoiceRef = useRef("");
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
@@ -58,16 +57,16 @@ const AddService = () => {
 
   const togglePart = (part) => {
     setSelectedParts((prev) => {
-      const exists = prev.find((p) => p.id === part.id);
+      const exists = prev.find((p) => p.id === Number(part.id));
 
       if (exists) {
-        return prev.filter((p) => p.id !== part.id);
+        return prev.filter((p) => p.id !== Number(part.id));
       }
 
       return [
         ...prev,
         {
-          id: part.id,
+          id: Number(part.id),
           name: part.name,
           price: String(part.price),
           basePrice: part.price,
@@ -108,63 +107,72 @@ const AddService = () => {
 
   const [isSaved, setIsSaved] = useState(false);  
 
-const handleSave = async () => {
+  const handleSave = async () => {
 
-  const invoiceNumber = generateInvoiceNumber("SERVICE");
+    if (isSaved) return;
+    setIsSaved(true);
 
-  let customerId;
+    const invoiceNumber = generateInvoiceNumber("SERVICE");
 
-  if (isNewCustomer) {
+    let customerId;
 
-    const customerRes = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/customers`,
+    if (isNewCustomer) {
+
+      const customerRes = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/customers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(customer),
+        }
+      );
+
+      const customerData = await customerRes.json();
+      customerId = customerData.customer._id;
+
+    } else {
+
+      customerId = selectedCustomerId;
+
+    }
+
+    const serviceRes = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/services`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(customer),
+        body: JSON.stringify({
+
+          invoiceNumber,
+          date,
+          customerId,
+
+          parts: selectedParts.map(p => ({
+            id: Number(p.id),
+            name: p.name,
+            price: Number(p.price),
+            quantity: Number(p.quantity)
+          })),
+
+          serviceCharge: serviceCharge + amcAmount,
+          discountPercent,
+          discountAmount,
+          totalAmount: finalAmount,
+          startAmc
+
+        }),
       }
     );
 
-    const customerData = await customerRes.json();
-    customerId = customerData.customer._id;
+    const serviceData = await serviceRes.json();
 
-  } else {
-
-    customerId = selectedCustomerId;
-
-  }
-
-  const serviceRes = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/services`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-
-        invoiceNumber,
-        date,
-        customerId,
-        parts: selectedParts,
-
-        serviceCharge: serviceCharge + amcAmount,
-
-        discountPercent,
-        discountAmount,
-        totalAmount: finalAmount,
-
-        startAmc
-
-      }),
+    if (serviceData.success) {
+      window.location.href = `/bill/${invoiceNumber}`;
+    } else {
+      setIsSaved(false);
     }
-  );
 
-  const serviceData = await serviceRes.json();
-
-  if (serviceData.success) {
-    window.location.href = `/bill/${invoiceNumber}`;
-  }
-
-};
+  };
 
   const updatePartPrice = (id, value) => {
     if (!/^\d*$/.test(value)) return;
@@ -321,12 +329,12 @@ const decreaseQty = (id) => {
         <div className="parts-grid">
           {RO_PARTS.map((part) => {
             const selected = selectedParts.find(
-              (p) => p.id === part.id
+              (p) => p.id === Number(part.id)
             );
 
             return (
               <div
-                key={part.id}
+                key={Number(part.id)}
                 className={`part-item ${selected ? "selected" : ""}`}
                 onClick={() => togglePart(part)}
               >
@@ -344,7 +352,7 @@ const decreaseQty = (id) => {
                       className="part-price-input"
                       value={selected.price}
                       onChange={(e) =>
-                        updatePartPrice(part.id, e.target.value)
+                        updatePartPrice(Number(part.id), e.target.value)
                       }
                     />
 
@@ -353,7 +361,7 @@ const decreaseQty = (id) => {
                       <button
                         type="button"
                         className="qtybutton"
-                        onClick={() => decreaseQty(part.id)}
+                        onClick={() => decreaseQty(Number(part.id))}
                       >
                         −
                       </button>
@@ -363,7 +371,7 @@ const decreaseQty = (id) => {
                       <button
                         type="button"
                         className="qtybutton"
-                        onClick={() => increaseQty(part.id)}
+                        onClick={() => increaseQty(Number(part.id))}
                       >
                         +
                       </button>
