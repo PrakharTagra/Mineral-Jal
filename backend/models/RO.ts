@@ -4,13 +4,12 @@ const ROSchema = new mongoose.Schema({
   invoiceNumber: {
     type: String,
     required: true,
-    index: true
   },
 
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
-    required: true
+    required: true,
   },
 
   model: String,
@@ -23,37 +22,41 @@ const ROSchema = new mongoose.Schema({
     {
       name: String,
 <<<<<<< HEAD
+<<<<<<< HEAD
 
       price: {
         type: Number,
         default: 0
       },
+=======
+      price: Number,
+>>>>>>> parent of b4b1107 (update)
 
       quantity: {
         type: Number,
-        default: 1
-      }
-    }
+        default: 1,
+      },
+    },
   ],
 
   installationCost: {
     type: Number,
-    default: 0
+    default: 0,
   },
 
   discountPercent: {
     type: Number,
-    default: 0
+    default: 0,
   },
 
   discountAmount: {
     type: Number,
-    default: 0
+    default: 0,
   },
 
   totalAmount: {
     type: Number,
-    default: 0
+    default: 0,
   },
 =======
       price: Number,
@@ -71,13 +74,13 @@ const ROSchema = new mongoose.Schema({
 
   startAmc: {
     type: Boolean,
-    default: false
+    default: false,
   },
 
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 export default mongoose.models.RO || mongoose.model("RO", ROSchema);
