@@ -20,8 +20,12 @@ const AMCTracker = () => {
         );
 
         const data = await res.json();
-
-        setAmcs(data);
+        if (Array.isArray(data)) {
+          setAmcs(data);
+        } else {
+          console.error("AMC API returned error:", data);
+          setAmcs([]);
+        }
       } catch (error) {
         console.error("AMC fetch error:", error);
       } finally {
@@ -34,7 +38,7 @@ const AMCTracker = () => {
 
   if (loading) return <Loader />;
 
-  const filtered = amcs.filter((a) => {
+  const filtered = (amcs || []).filter((a) => {
     const status = a.status?.toUpperCase();
 
     if (tab === "ACTIVE") return status === "ACTIVE";
