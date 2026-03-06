@@ -21,8 +21,8 @@ const ROSchema = new mongoose.Schema({
 
   components: [
     {
-      id: Number,
       name: String,
+<<<<<<< HEAD
 
       price: {
         type: Number,
@@ -55,6 +55,19 @@ const ROSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+=======
+      price: Number,
+    },
+  ],
+
+  installationCost: Number,
+
+  discountPercent: Number,
+
+  discountAmount: Number,
+
+  totalAmount: Number,
+>>>>>>> parent of 612952b (11)
 
   startAmc: {
     type: Boolean,

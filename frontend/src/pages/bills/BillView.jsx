@@ -90,12 +90,9 @@ useEffect(() => {
     : Number(bill?.installationCost || 0);
 
   const partsTotal = parts.reduce(
-  (sum, p) =>
-    sum +
-    Number(p.price || 0) *
-      Number(p.quantity || 1),
-  0
-);
+    (sum, p) => sum + Number(p.price || 0),
+    0
+  );
 
   const subTotal = partsTotal + extraCharge;
 
@@ -184,63 +181,45 @@ useEffect(() => {
 
         {/* ITEMS TABLE */}
         <table className="invoice-table">
-  <thead>
-    <tr>
-      <th>S.No.</th>
-      <th>Item Description</th>
-      <th>Qty</th>
-      <th>Price</th>
-      <th style={{ textAlign: "right" }}>Total (₹)</th>
-    </tr>
-  </thead>
+          <thead>
+            <tr>
+              <th>S.No.</th>
+              <th>Item Description</th>
+              <th style={{ textAlign: "right" }}>Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {parts.map((part, index) => (
+              <tr key={part.id || index}>
+                <td>{index + 1}</td>
+                <td>{part.name}</td>
+                <td style={{ textAlign: "right" }}>
+                  ₹{Number(part.price)}
+                </td>
+              </tr>
+            ))}
 
-  <tbody>
+            <tr>
+              <td>{parts.length + 1}</td>
+              <td>
+                {isService
+                  ? "Service Charges"
+                  : "Installation Charges"}
+              </td>
+              <td style={{ textAlign: "right" }}>
+                ₹{extraCharge}
+              </td>
+            </tr>
 
-    {parts.map((part, index) => {
-
-      const qty = Number(part.quantity || 1);
-      const price = Number(part.price || 0);
-      const total = qty * price;
-
-      return (
-        <tr key={part.id || index}>
-          <td>{index + 1}</td>
-          <td>{part.name}</td>
-          <td>{qty}</td>
-          <td>₹{price}</td>
-          <td style={{ textAlign: "right" }}>
-            ₹{total}
-          </td>
-        </tr>
-      );
-    })}
-
-    <tr>
-      <td>{parts.length + 1}</td>
-      <td>
-        {isService
-          ? "Service Charges"
-          : "Installation Charges"}
-      </td>
-      <td>-</td>
-      <td>-</td>
-      <td style={{ textAlign: "right" }}>
-        ₹{extraCharge}
-      </td>
-    </tr>
-
-    <tr>
-      <td>{parts.length + 2}</td>
-      <td>Discount</td>
-      <td>-</td>
-      <td>-</td>
-      <td style={{ textAlign: "right" }}>
-        - ₹{bill.discountAmount || 0}
-      </td>
-    </tr>
-
-  </tbody>
-</table>
+            <tr>
+              <td>{parts.length + 2}</td>
+              <td>Discount</td>
+              <td style={{ textAlign: "right" }}>
+                - ₹{bill.discountAmount || 0}
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         {/* TOTAL */}
         <div className="invoice-summary">

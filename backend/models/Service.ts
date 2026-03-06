@@ -1,11 +1,35 @@
 import mongoose from "mongoose";
 
+<<<<<<< HEAD
 const ServiceSchema = new mongoose.Schema(
   {
     invoiceNumber: {
       type: String,
       required: true,
       index: true,
+=======
+const ServiceSchema = new mongoose.Schema({
+  invoiceNumber: {
+    type: String,
+    required: true,
+  },
+
+  customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Customer",
+    required: true,
+  },
+
+  date: {
+    type: Date,
+    required: true,
+  },
+
+  parts: [
+    {
+      name: String,
+      price: Number,
+>>>>>>> parent of 612952b (11)
     },
 
     customerId: {
@@ -15,6 +39,7 @@ const ServiceSchema = new mongoose.Schema(
       index: true,
     },
 
+<<<<<<< HEAD
     date: {
       type: Date,
       required: true,
@@ -25,6 +50,13 @@ const ServiceSchema = new mongoose.Schema(
         _id: false,
 
         id: Number,
+=======
+  discountPercent: Number,
+
+  discountAmount: Number,
+
+  totalAmount: Number,
+>>>>>>> parent of 612952b (11)
 
         name: String,
 
