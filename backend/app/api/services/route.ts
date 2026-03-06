@@ -165,10 +165,9 @@ export async function POST(req: Request) {
        START AMC
     ====================== */
 
-    if (startAmc && roId) {
-
+    if (startAmc) {
       const existingAMC = await AMC.findOne({
-        roId,
+        customerId,
         status: "ACTIVE",
       });
 
@@ -184,7 +183,7 @@ export async function POST(req: Request) {
 
         await AMC.create({
           customerId,
-          roId,
+          roId: roId || null,
           startDate: start,
 
           fourMonth: {
@@ -204,6 +203,7 @@ export async function POST(req: Request) {
 
           status: "ACTIVE",
         });
+
       }
     }
 

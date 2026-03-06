@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
-const ServiceSchema = new mongoose.Schema(
-{
+const ServiceSchema = new mongoose.Schema({
+
   invoiceNumber: {
     type: String,
     required: true,
-    index: true
+    unique: true
   },
 
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
-    required: true,
+    required: true
   },
 
   roId: {
@@ -21,7 +21,10 @@ const ServiceSchema = new mongoose.Schema(
     index: true
   },
 
-  roModel: String,
+  roModel: {
+    type: String,
+    default: null
+  },
 
   date: {
     type: Date,
@@ -30,42 +33,19 @@ const ServiceSchema = new mongoose.Schema(
 
   parts: [
     {
+      _id: false,
       name: String,
-      price: {
-        type: Number,
-        default: 0
-      },
-      quantity: {
-        type: Number,
-        default: 1
-      }
+      price: { type: Number, default: 0 },
+      quantity: { type: Number, default: 1 }
     }
   ],
 
-  serviceCharge: {
-    type: Number,
-    default: 0
-  },
+  serviceCharge: { type: Number, default: 0 },
+  discountPercent: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 0 },
+  totalAmount: { type: Number, default: 0 },
 
-  discountPercent: {
-    type: Number,
-    default: 0
-  },
-
-  discountAmount: {
-    type: Number,
-    default: 0
-  },
-
-  totalAmount: {
-    type: Number,
-    default: 0
-  },
-
-  startAmc: {
-    type: Boolean,
-    default: false
-  },
+  startAmc: { type: Boolean, default: false },
 
   notes: String,
 
@@ -75,11 +55,10 @@ const ServiceSchema = new mongoose.Schema(
     default: "NORMAL"
   }
 
-},
-{ timestamps: true }
-);
+}, { timestamps: true });
 
-ServiceSchema.index({ customerId: 1 });
+ServiceSchema.index({ invoiceNumber: 1 });
+ServiceSchema.index({ customerId: 1, date: -1 });
 ServiceSchema.index({ roId: 1 });
 
 export default mongoose.models.Service ||
