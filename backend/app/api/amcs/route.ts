@@ -82,25 +82,16 @@ export async function GET(req: Request) {
       status: 200,
       headers: getCorsHeaders(origin),
     });
-  } catch (error) {
-      console.error("AMC API ERROR:", error);
 
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: "AMC fetch failed",
-          error: String(error)   // 👈 add this
-        }),
-        {
-          status: 500,
-          headers: getCorsHeaders(origin),
-        }
-      );
+  } catch (error) {
+
+    console.error("AMC API ERROR:", error);
 
     return new Response(
       JSON.stringify({
         success: false,
         message: "AMC fetch failed",
+        error: String(error)
       }),
       {
         status: 500,
