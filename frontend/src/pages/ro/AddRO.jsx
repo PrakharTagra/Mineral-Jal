@@ -14,6 +14,7 @@ const AddRO = () => {
   const [date, setDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const AMC_PRICE = 3000;
   const [customer, setCustomer] = useState({
     name: "",
     phone: "",
@@ -114,15 +115,18 @@ const decreaseQty = (id) => {
     (partsTotal * Number(discountPercent || 0)) / 100
   );
 
+  const amcAmount = startAmc ? AMC_PRICE : 0;
+
   const finalAmount =
     partsTotal +
-    Number(installationCharge || 0) -
+    Number(installationCharge || 0) +
+    amcAmount -
     discountAmount;
 
   /* ---------------- VALIDATION ---------------- */
   const isCustomerValid = isNewCustomer
     ? customer.name.trim() !== "" && customer.phone.trim() !== ""
-    : selectedCustomerId !== null;
+    : selectedCustomerId !== "";
 
   const isFormValid =
   isCustomerValid &&
@@ -158,14 +162,12 @@ const decreaseQty = (id) => {
         body: JSON.stringify({
           invoiceNumber,
           customerId,
-
-          // 🔥 FIXED FIELD NAMES
           model: roName,
           installDate: date,
           note: notes,
           components: selectedParts,
           installationCost: Number(installationCharge || 0),
-
+          amcCharge: amcAmount,
           discountPercent: Number(discountPercent || 0),
           discountAmount,
           totalAmount: finalAmount,
@@ -392,6 +394,13 @@ const decreaseQty = (id) => {
             }}
           />
         </div>
+
+        {startAmc && (
+          <div className="bill-row">
+            <span>AMC (1 Year)</span>
+            <strong>₹{AMC_PRICE}</strong>
+          </div>
+        )}
 
         <div className="bill-input">
           <label>Discount on Parts (%)</label>

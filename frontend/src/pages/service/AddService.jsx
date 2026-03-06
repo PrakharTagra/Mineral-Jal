@@ -16,6 +16,7 @@ const AddService = () => {
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
+  const AMC_PRICE = 3000;
 
 
   useEffect(() => {
@@ -83,12 +84,18 @@ const AddService = () => {
     (partsTotal * discountPercent) / 100
   );
 
-  const finalAmount = partsTotal + serviceCharge - discountAmount;
+  const amcAmount = startAmc ? AMC_PRICE : 0;
+
+  const finalAmount =
+    partsTotal +
+    serviceCharge +
+    amcAmount -
+    discountAmount;
 
   /* ---------- VALIDATION ---------- */
   const isCustomerValid = isNewCustomer
     ? customer.name.trim() !== "" && customer.phone.trim() !== ""
-    : selectedCustomerId !== null;
+    : selectedCustomerId !== "";
 
   const isFormValid =
     isCustomerValid &&
@@ -134,6 +141,7 @@ const handleSave = async () => {
         customerId,
         parts: selectedParts,
         serviceCharge,
+        amcCharge: amcAmount,
         discountPercent,
         discountAmount,
         totalAmount: finalAmount,
@@ -383,6 +391,13 @@ const decreaseQty = (id) => {
             }
           />
         </div>
+
+        {startAmc && (
+          <div className="bill-row">
+            <span>AMC (1 Year)</span>
+            <strong>₹{AMC_PRICE}</strong>
+          </div>
+        )}
 
         {/* Discount percent */}
         <div className="bill-input">
