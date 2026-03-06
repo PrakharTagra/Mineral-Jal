@@ -39,7 +39,7 @@ const AMCSchema = new mongoose.Schema(
     roId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "RO",
-      required: true,
+      default: null,
     },
 
     startDate: {
