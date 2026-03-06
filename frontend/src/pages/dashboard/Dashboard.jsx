@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
-import Loader from "../../components/Loader"; // adjust path if needed
+import Loader from "../../components/Loader";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ const Dashboard = () => {
   const [summary, setSummary] = useState({
     activeAmcs: 0,
     dueSoon: 0,
-    pendingServices: 0,
+    totalServices: 0,
     totalCustomers: 0,
   });
 
@@ -21,51 +21,66 @@ const Dashboard = () => {
       try {
         setLoading(true);
 
-        const [customerRes, roRes, serviceRes] = await Promise.all([
+        const [customerRes, serviceRes, amcRes] = await Promise.all([
           fetch(`${import.meta.env.VITE_API_URL}/api/customers`),
-          fetch(`${import.meta.env.VITE_API_URL}/api/ro`),
           fetch(`${import.meta.env.VITE_API_URL}/api/services`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/amcs`)
         ]);
 
         const customers = await customerRes.json();
-        const ros = await roRes.json();
         const services = await serviceRes.json();
+        const amcs = await amcRes.json();
 
-        /* ===== Summary Calculations ===== */
+        /* ===== Summary ===== */
 
-        const activeAmcs = ros.filter((r) => r.startAmc).length;
-
+        const activeAmcs = amcs.filter(a => a.status === "ACTIVE").length;
         const totalCustomers = customers.length;
+        const totalServices = services.length;
 
-        const pendingServices = services.length;
+        /* ===== Find Due AMC Visits ===== */
 
-        /* ===== Today's Work ===== */
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10);
 
-        const today = new Date().toISOString().slice(0, 10);
+        const dueAmcs = [];
 
-        const todayServices = services
-          .filter(
-            (s) =>
-              s.date &&
-              s.date.slice(0, 10) === today
-          )
-          .map((s) => ({
-            id: s._id,
-            type: "Service",
-            customer: s.customerId?.name || "Customer",
-            detail:
-              s.parts?.map((p) => p.name).join(", ") ||
-              "Service Work",
-          }));
+        amcs.forEach((amc) => {
+
+          const customerName = amc.customerId?.name || "Customer";
+
+          const checkpoints = [
+            { key: "fourMonth", label: "4 Month Service" },
+            { key: "eightMonth", label: "8 Month Service" },
+            { key: "twelveMonth", label: "12 Month Service" }
+          ];
+
+          checkpoints.forEach((cp) => {
+            const checkpoint = amc[cp.key];
+
+            if (
+              checkpoint &&
+              !checkpoint.completed &&
+              new Date(checkpoint.date).toISOString().slice(0,10) <= todayStr
+            ) {
+              dueAmcs.push({
+                id: amc._id,
+                type: "AMC Service",
+                customer: customerName,
+                detail: cp.label
+              });
+            }
+          });
+
+        });
 
         setSummary({
           activeAmcs,
-          dueSoon: 0, // future AMC reminder logic
-          pendingServices,
+          dueSoon: dueAmcs.length,
+          totalServices,
           totalCustomers,
         });
 
-        setTodaysWork(todayServices);
+        setTodaysWork(dueAmcs);
 
       } catch (error) {
         console.error("Dashboard fetch error:", error);
@@ -82,45 +97,30 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
 
-      {/* Header */}
       <h2 className="page-title">Dashboard</h2>
 
       {/* Summary Cards */}
       <div className="summary-grid">
         <SummaryCard title="Active AMCs" value={summary.activeAmcs} />
-        <SummaryCard title="AMCs Due Soon" value={summary.dueSoon} />
-        <SummaryCard title="Total Services" value={summary.pendingServices} />
+        <SummaryCard title="AMCs Due" value={summary.dueSoon} />
+        <SummaryCard title="Total Services" value={summary.totalServices} />
         <SummaryCard title="Total Customers" value={summary.totalCustomers} />
       </div>
 
-      {/* Primary Actions */}
+      {/* Actions */}
       <div className="actions-grid">
-        <ActionButton
-          label="Add New RO"
-          onClick={() => navigate("/add-ro")}
-        />
-        <ActionButton
-          label="Add Service"
-          onClick={() => navigate("/add-service")}
-        />
-        <ActionButton
-          label="AMC Tracker"
-          onClick={() => navigate("/amc")}
-        />
-        <ActionButton
-          label="Customers"
-          onClick={() => navigate("/customers")}
-        />
+        <ActionButton label="Add New RO" onClick={() => navigate("/add-ro")} />
+        <ActionButton label="Add Service" onClick={() => navigate("/add-service")} />
+        <ActionButton label="AMC Tracker" onClick={() => navigate("/amc")} />
+        <ActionButton label="Customers" onClick={() => navigate("/customers")} />
       </div>
 
       {/* Today's Work */}
       <div className="today-section">
-        <h3>Today's Work</h3>
+        <h3>Due AMC Visits</h3>
 
         {todaysWork.length === 0 ? (
-          <p className="empty-text">
-            No tasks for today 🎉
-          </p>
+          <p className="empty-text">No AMC visits due 🎉</p>
         ) : (
           todaysWork.map((item) => (
             <div key={item.id} className="today-item">
@@ -132,7 +132,7 @@ const Dashboard = () => {
 
               <button
                 className="quick-btn"
-                onClick={() => navigate("/add-service")}
+                onClick={() => navigate("/amc")}
               >
                 View
               </button>
