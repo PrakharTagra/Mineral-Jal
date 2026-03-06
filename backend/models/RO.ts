@@ -1,22 +1,47 @@
 import mongoose from "mongoose";
 
 const ROSchema = new mongoose.Schema({
-  invoiceNumber: String,
+  invoiceNumber: {
+    type: String,
+    required: true,
+  },
+
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
+    required: true,
   },
+
   model: String,
-  installDate: String,
+
+  installDate: Date,
+
   note: String,
-  components: Array,
+
+  components: [
+    {
+      name: String,
+      price: Number,
+    },
+  ],
+
   installationCost: Number,
+
   discountPercent: Number,
+
   discountAmount: Number,
+
   totalAmount: Number,
-  startAmc: Boolean,
-  createdAt: { type: Date, default: Date.now },
+
+  startAmc: {
+    type: Boolean,
+    default: false,
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-export default mongoose.models.RO ||
-  mongoose.model("RO", ROSchema);
+export default mongoose.models.RO || mongoose.model("RO", ROSchema);

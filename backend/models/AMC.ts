@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
 
 const checkpointSchema = new mongoose.Schema({
-  date: Date,
+  date: {
+    type: Date,
+    required: true,
+  },
 
   completed: {
     type: Boolean,
@@ -26,35 +29,44 @@ const checkpointSchema = new mongoose.Schema({
 });
 
 const AMCSchema = new mongoose.Schema(
-{
-  customerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Customer",
+  {
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+    },
+
+    roId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RO",
+      required: true,
+    },
+
+    startDate: {
+      type: Date,
+      required: true,
+    },
+
+    fourMonth: checkpointSchema,
+    eightMonth: checkpointSchema,
+    twelveMonth: checkpointSchema,
+
+    renewed: {
+      type: Boolean,
+      default: false,
+    },
+
+    status: {
+      type: String,
+      enum: ["ACTIVE", "DUE", "EXPIRED"],
+      default: "ACTIVE",
+    },
   },
-
-  roId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "RO",
-  },
-
-  startDate: Date,
-
-  fourMonth: checkpointSchema,
-  eightMonth: checkpointSchema,
-  twelveMonth: checkpointSchema,
-
-  renewed: {
-    type: Boolean,
-    default: false,
-  },
-
-  status: {
-    type: String,
-    default: "ACTIVE",
-  }
-},
-{ timestamps: true }
+  { timestamps: true }
 );
 
-export default mongoose.models.AMC ||
-mongoose.model("AMC", AMCSchema);
+AMCSchema.index({ customerId: 1 });
+AMCSchema.index({ roId: 1 });
+AMCSchema.index({ status: 1 });
+
+export default mongoose.models.AMC || mongoose.model("AMC", AMCSchema);

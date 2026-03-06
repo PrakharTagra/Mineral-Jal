@@ -39,6 +39,13 @@ export async function GET(req: Request) {
   try {
     await connectDB();
 
+    // ensure schemas are registered
+    await Promise.all([
+      import("@/models/Customer"),
+      import("@/models/RO"),
+      import("@/models/AMC"),
+    ]);
+
     const amcs = await AMC.find()
       .populate({
         path: "customerId",
@@ -109,6 +116,12 @@ export async function POST(req: Request) {
 
   try {
     await connectDB();
+
+    await Promise.all([
+      import("@/models/Customer"),
+      import("@/models/RO"),
+      import("@/models/AMC"),
+    ]);
 
     const body = await req.json();
 
