@@ -1,76 +1,83 @@
 import mongoose from "mongoose";
 
-const ServiceSchema = new mongoose.Schema({
+const ServiceSchema = new mongoose.Schema(
+{
   invoiceNumber: {
     type: String,
     required: true,
-    index: true,
+    index: true
   },
 
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
     required: true,
-    index: true,
+    index: true
   },
+
+  roId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "RO",
+    default: null, // optional
+    index: true
+  },
+
+  roModel: String, // for external RO services
 
   date: {
     type: Date,
-    required: true,
+    required: true
   },
 
   parts: [
     {
-      id: Number,
-
       name: String,
-
       price: {
         type: Number,
-        default: 0,
+        default: 0
       },
-
       quantity: {
         type: Number,
-        default: 1,
-      },
-    },
+        default: 1
+      }
+    }
   ],
 
   serviceCharge: {
     type: Number,
-    default: 0,
+    default: 0
   },
 
   discountPercent: {
     type: Number,
-    default: 0,
+    default: 0
   },
 
   discountAmount: {
     type: Number,
-    default: 0,
+    default: 0
   },
 
   totalAmount: {
     type: Number,
-    default: 0,
+    default: 0
   },
 
-  startAmc: {
-    type: Boolean,
-    default: false,
-  },
+  notes: String,
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  serviceType: {
+    type: String,
+    enum: ["NORMAL", "AMC"],
+    default: "NORMAL"
+  }
 
-/* Indexes for faster queries */
+},
+{ timestamps: true }
+);
+
 ServiceSchema.index({ customerId: 1 });
+ServiceSchema.index({ roId: 1 });
 ServiceSchema.index({ invoiceNumber: 1 });
 
 export default mongoose.models.Service ||
-  mongoose.model("Service", ServiceSchema);
+mongoose.model("Service", ServiceSchema);
