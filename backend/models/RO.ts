@@ -20,18 +20,36 @@ const ROSchema = new mongoose.Schema({
 
   components: [
     {
+      id: Number,
       name: String,
       price: Number,
+
+      quantity: {
+        type: Number,
+        default: 1,
+      },
     },
   ],
 
-  installationCost: Number,
+  installationCost: {
+    type: Number,
+    default: 0,
+  },
 
-  discountPercent: Number,
+  discountPercent: {
+    type: Number,
+    default: 0,
+  },
 
-  discountAmount: Number,
+  discountAmount: {
+    type: Number,
+    default: 0,
+  },
 
-  totalAmount: Number,
+  totalAmount: {
+    type: Number,
+    default: 0,
+  },
 
   startAmc: {
     type: Boolean,

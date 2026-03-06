@@ -4,12 +4,14 @@ const ServiceSchema = new mongoose.Schema({
   invoiceNumber: {
     type: String,
     required: true,
+    index: true,
   },
 
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
     required: true,
+    index: true,
   },
 
   date: {
@@ -19,8 +21,19 @@ const ServiceSchema = new mongoose.Schema({
 
   parts: [
     {
+      id: Number,
+
       name: String,
-      price: Number,
+
+      price: {
+        type: Number,
+        default: 0,
+      },
+
+      quantity: {
+        type: Number,
+        default: 1,
+      },
     },
   ],
 
@@ -29,11 +42,20 @@ const ServiceSchema = new mongoose.Schema({
     default: 0,
   },
 
-  discountPercent: Number,
+  discountPercent: {
+    type: Number,
+    default: 0,
+  },
 
-  discountAmount: Number,
+  discountAmount: {
+    type: Number,
+    default: 0,
+  },
 
-  totalAmount: Number,
+  totalAmount: {
+    type: Number,
+    default: 0,
+  },
 
   startAmc: {
     type: Boolean,
