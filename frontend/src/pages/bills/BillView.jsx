@@ -188,12 +188,12 @@ const BillView = () => {
       <th>S.No.</th>
       <th>Item Description</th>
       <th style={{ textAlign: "center" }}>Qty</th>
+      <th style={{ textAlign: "right" }}>Price (₹)</th>
       <th style={{ textAlign: "right" }}>Amount (₹)</th>
     </tr>
   </thead>
 
   <tbody>
-
     {parts.map((part, index) => {
       const qty = Number(part.quantity || 1);
       const price = Number(part.price || 0);
@@ -207,6 +207,10 @@ const BillView = () => {
 
           <td style={{ textAlign: "center" }}>
             {qty}
+          </td>
+
+          <td style={{ textAlign: "right" }}>
+            ₹{price}
           </td>
 
           <td style={{ textAlign: "right" }}>
@@ -232,6 +236,10 @@ const BillView = () => {
       <td style={{ textAlign: "right" }}>
         ₹{extraCharge}
       </td>
+
+      <td style={{ textAlign: "right" }}>
+        ₹{extraCharge}
+      </td>
     </tr>
 
     {/* Discount */}
@@ -243,11 +251,12 @@ const BillView = () => {
 
       <td style={{ textAlign: "center" }}>-</td>
 
+      <td style={{ textAlign: "right" }}>-</td>
+
       <td style={{ textAlign: "right" }}>
         - ₹{bill.discountAmount || 0}
       </td>
     </tr>
-
   </tbody>
 </table>
 
