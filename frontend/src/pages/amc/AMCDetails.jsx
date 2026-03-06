@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Loader from "../../components/Loader";
 import "./AmcDetails.css";
 
 const AmcDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [amc, setAmc] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,37 +31,6 @@ const AmcDetails = () => {
   useEffect(() => {
     fetchAMC();
   }, [id]);
-
-  const completeService = async (checkpoint) => {
-    const billAmount = prompt("Enter bill amount");
-
-    const parts = prompt("Parts replaced (comma separated)");
-
-    const partsUsed = parts
-      ? parts.split(",").map((p) => ({
-          name: p.trim(),
-          price: 0,
-        }))
-      : [];
-
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/api/amcs/update`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amcId: amc._id,
-          checkpoint,
-          partsUsed,
-          billAmount,
-        }),
-      }
-    );
-
-    fetchAMC();
-  };
 
   const renewAMC = async () => {
     await fetch(
@@ -108,11 +78,12 @@ const AmcDetails = () => {
         </p>
       </div>
 
-      {/* Checkpoints */}
+      {/* Service Checkpoints */}
       <div className="card">
         <h3>Service Checkpoints</h3>
 
         {checkpoints.map((cp) => {
+
           const data = amc[cp.key];
 
           const dueDate = new Date(data?.date);
@@ -161,12 +132,21 @@ const AmcDetails = () => {
                 <button
                   className="complete-btn"
                   onClick={() =>
-                    completeService(cp.key)
+                    navigate(
+                      `/amc-service/${amc._id}/${cp.key}`,
+                      {
+                        state: {
+                          customer: amc.customerId,
+                          ro: amc.roId,
+                        },
+                      }
+                    )
                   }
                 >
                   Complete
                 </button>
               )}
+
             </div>
           );
         })}
@@ -183,6 +163,7 @@ const AmcDetails = () => {
           </button>
         </div>
       )}
+
     </div>
   );
 };
