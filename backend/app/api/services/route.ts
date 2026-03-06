@@ -20,9 +20,7 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-/* ===========================
-   OPTIONS
-=========================== */
+/* OPTIONS */
 export async function OPTIONS(req: Request) {
   return new Response(null, {
     status: 200,
@@ -31,9 +29,11 @@ export async function OPTIONS(req: Request) {
 }
 
 /* ===========================
-   GET
+   GET SERVICES
 =========================== */
+
 export async function GET(req: Request) {
+
   await connectDB();
 
   const origin = req.headers.get("origin");
@@ -41,7 +41,9 @@ export async function GET(req: Request) {
   const invoiceNumber = searchParams.get("invoiceNumber");
 
   try {
+
     if (invoiceNumber) {
+
       const service = await Service.findOne({
         invoiceNumber,
       }).populate("customerId");
@@ -50,6 +52,7 @@ export async function GET(req: Request) {
         status: 200,
         headers: getCorsHeaders(origin),
       });
+
     }
 
     const services = await Service.find()
@@ -60,30 +63,38 @@ export async function GET(req: Request) {
       status: 200,
       headers: getCorsHeaders(origin),
     });
+
   } catch (error) {
+
+    console.error("SERVICE FETCH ERROR:", error);
+
     return new Response(
       JSON.stringify({
         success: false,
         message: "Failed to fetch services",
-        error,
+        error: error instanceof Error ? error.message : error,
       }),
       {
         status: 500,
         headers: getCorsHeaders(origin),
       }
     );
+
   }
 }
 
 /* ===========================
-   POST
+   CREATE SERVICE
 =========================== */
+
 export async function POST(req: Request) {
+
   await connectDB();
 
   const origin = req.headers.get("origin");
 
   try {
+
     const body = await req.json();
 
     const {
@@ -126,16 +137,20 @@ export async function POST(req: Request) {
       );
     }
 
-    /* ===========================
-       CREATE SERVICE
-    =========================== */
+    /* CREATE SERVICE */
 
     const newService = await Service.create({
+
       invoiceNumber,
       customerId,
       date,
 
-      parts: parts || [],
+      parts: (parts || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: Number(p.price || 0),
+        quantity: Number(p.quantity || 1),
+      })),
 
       serviceCharge: Number(serviceCharge || 0),
       discountPercent: Number(discountPercent || 0),
@@ -143,13 +158,15 @@ export async function POST(req: Request) {
       totalAmount: Number(totalAmount || 0),
 
       startAmc: Boolean(startAmc),
+
     });
 
     /* ===========================
-       CREATE AMC IF REQUIRED
+       CREATE AMC
     =========================== */
 
     if (startAmc) {
+
       const existingAMC = await AMC.findOne({
         customerId,
         serviceId: newService._id,
@@ -157,6 +174,7 @@ export async function POST(req: Request) {
       });
 
       if (!existingAMC) {
+
         const start = new Date(date || new Date());
 
         const addMonths = (date: Date, months: number) => {
@@ -166,6 +184,7 @@ export async function POST(req: Request) {
         };
 
         await AMC.create({
+
           customerId,
           serviceId: newService._id,
 
@@ -187,8 +206,11 @@ export async function POST(req: Request) {
           },
 
           status: "ACTIVE",
+
         });
+
       }
+
     }
 
     return new Response(
@@ -201,17 +223,22 @@ export async function POST(req: Request) {
         headers: getCorsHeaders(origin),
       }
     );
+
   } catch (error) {
+
+    console.error("SERVICE CREATE ERROR:", error);
+
     return new Response(
       JSON.stringify({
         success: false,
         message: "Service creation failed",
-        error,
+        error: error instanceof Error ? error.message : error,
       }),
       {
         status: 500,
         headers: getCorsHeaders(origin),
       }
     );
+
   }
 }
