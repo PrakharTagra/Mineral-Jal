@@ -138,7 +138,7 @@ const AppRoutes = () => {
       />
 
       <Route 
-        path="/amc/:id" 
+        path="/amc-service/:amcId/:checkpoint" 
         element={
           <ProtectedRoute>
             <MainLayout>
