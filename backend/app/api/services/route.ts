@@ -72,14 +72,12 @@ export async function GET(req: Request) {
       JSON.stringify({
         success: false,
         message: "Failed to fetch services",
-        error: error instanceof Error ? error.message : error,
       }),
       {
         status: 500,
         headers: getCorsHeaders(origin),
       }
     );
-
   }
 }
 
@@ -88,16 +86,19 @@ export async function GET(req: Request) {
 =========================== */
 
 export async function POST(req: Request) {
+
   await connectDB();
 
   const origin = req.headers.get("origin");
 
   try {
+
     const body = await req.json();
 
     const {
       invoiceNumber,
       customerId,
+      roId,
       date,
       parts,
       serviceCharge,
@@ -106,6 +107,8 @@ export async function POST(req: Request) {
       totalAmount,
       startAmc,
     } = body;
+
+    /* CUSTOMER CHECK */
 
     if (!customerId) {
       return new Response(
@@ -130,6 +133,7 @@ export async function POST(req: Request) {
     }
 
     /* NORMALIZE PARTS */
+
     const safeParts = (parts || []).map((p: any) => ({
       id: Number(p.id || 0),
       name: p.name || "",
@@ -138,9 +142,11 @@ export async function POST(req: Request) {
     }));
 
     /* CREATE SERVICE */
+
     const newService = await Service.create({
       invoiceNumber,
       customerId,
+      roId: roId || null,
       date: new Date(date || new Date()),
       parts: safeParts,
       serviceCharge: Number(serviceCharge || 0),
@@ -150,8 +156,37 @@ export async function POST(req: Request) {
       startAmc: Boolean(startAmc),
     });
 
-    /* CREATE AMC IF SELECTED */
+    /* START AMC FROM SERVICE */
+
     if (startAmc) {
+
+      if (!roId) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: "RO is required to start AMC",
+          }),
+          { status: 400, headers: getCorsHeaders(origin) }
+        );
+      }
+
+      /* Prevent duplicate AMC */
+
+      const existingAMC = await AMC.findOne({
+        roId,
+        status: "ACTIVE",
+      });
+
+      if (existingAMC) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: "AMC already active for this RO",
+          }),
+          { status: 400, headers: getCorsHeaders(origin) }
+        );
+      }
+
       const start = new Date(date || new Date());
 
       const addMonths = (d: Date, m: number) => {
@@ -162,22 +197,27 @@ export async function POST(req: Request) {
 
       await AMC.create({
         customerId,
-        serviceId: newService._id,   // ensure AMC schema has this field
+        roId,
         startDate: start,
+
         fourMonth: {
           date: addMonths(start, 4),
           completed: false,
         },
+
         eightMonth: {
           date: addMonths(start, 8),
           completed: false,
         },
+
         twelveMonth: {
           date: addMonths(start, 12),
           completed: false,
         },
+
         status: "ACTIVE",
       });
+
     }
 
     return new Response(
@@ -189,6 +229,7 @@ export async function POST(req: Request) {
     );
 
   } catch (error) {
+
     console.error("SERVICE CREATE ERROR:", error);
 
     return new Response(
@@ -197,7 +238,11 @@ export async function POST(req: Request) {
         message: "Service creation failed",
         error: error instanceof Error ? error.message : String(error),
       }),
-      { status: 500, headers: getCorsHeaders(origin) }
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
     );
+
   }
 }
