@@ -17,6 +17,9 @@ const AddService = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
   const AMC_PRICE = 3000;
+  const [date, setDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
 
   useEffect(() => {
@@ -106,11 +109,13 @@ const AddService = () => {
   const [isSaved, setIsSaved] = useState(false);  
 
 const handleSave = async () => {
+
   const invoiceNumber = generateInvoiceNumber("SERVICE");
 
   let customerId;
 
   if (isNewCustomer) {
+
     const customerRes = await fetch(
       `${import.meta.env.VITE_API_URL}/api/customers`,
       {
@@ -122,30 +127,33 @@ const handleSave = async () => {
 
     const customerData = await customerRes.json();
     customerId = customerData.customer._id;
-  } 
 
-  else {
+  } else {
+
     customerId = selectedCustomerId;
+
   }
 
-  // 🔥 Now create service
   const serviceRes = await fetch(
     `${import.meta.env.VITE_API_URL}/api/services`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+
         invoiceNumber,
-        type: "SERVICE",
-        date: new Date().toISOString(),
+        date,
         customerId,
         parts: selectedParts,
-        serviceCharge,
-        amcCharge: amcAmount,
+
+        serviceCharge: serviceCharge + amcAmount,
+
         discountPercent,
         discountAmount,
         totalAmount: finalAmount,
-        startAmc,
+
+        startAmc
+
       }),
     }
   );
@@ -155,6 +163,7 @@ const handleSave = async () => {
   if (serviceData.success) {
     window.location.href = `/bill/${invoiceNumber}`;
   }
+
 };
 
   const updatePartPrice = (id, value) => {
@@ -298,7 +307,11 @@ const decreaseQty = (id) => {
       {/* SERVICE DATE */}
       <div className="card">
         <p className="label">Service Date</p>
-        <input type="date" />
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
       </div>
 
       {/* PARTS */}
