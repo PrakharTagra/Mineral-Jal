@@ -17,11 +17,11 @@ const ServiceSchema = new mongoose.Schema(
   roId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "RO",
-    default: null, // optional
+    default: null,
     index: true
   },
 
-  roModel: String, // for external RO services
+  roModel: String,
 
   date: {
     type: Date,
@@ -62,6 +62,11 @@ const ServiceSchema = new mongoose.Schema(
     default: 0
   },
 
+  startAmc: {
+    type: Boolean,
+    default: false
+  },
+
   notes: String,
 
   serviceType: {
@@ -76,7 +81,6 @@ const ServiceSchema = new mongoose.Schema(
 
 ServiceSchema.index({ customerId: 1 });
 ServiceSchema.index({ roId: 1 });
-ServiceSchema.index({ invoiceNumber: 1 });
 
 export default mongoose.models.Service ||
 mongoose.model("Service", ServiceSchema);

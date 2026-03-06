@@ -20,7 +20,10 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-/* OPTIONS */
+/* ===========================
+   OPTIONS (CORS)
+=========================== */
+
 export async function OPTIONS(req: Request) {
   return new Response(null, {
     status: 200,
@@ -42,6 +45,8 @@ export async function GET(req: Request) {
 
   try {
 
+    /* GET SINGLE SERVICE */
+
     if (invoiceNumber) {
 
       const service = await Service.findOne({
@@ -52,8 +57,9 @@ export async function GET(req: Request) {
         status: 200,
         headers: getCorsHeaders(origin),
       });
-
     }
+
+    /* GET ALL SERVICES */
 
     const services = await Service.find()
       .populate("customerId")
@@ -105,10 +111,10 @@ export async function POST(req: Request) {
       discountPercent,
       discountAmount,
       totalAmount,
-      startAmc,
+      startAmc
     } = body;
 
-    /* CUSTOMER CHECK */
+    /* VALIDATE CUSTOMER */
 
     if (!customerId) {
       return new Response(
@@ -135,10 +141,9 @@ export async function POST(req: Request) {
     /* NORMALIZE PARTS */
 
     const safeParts = (parts || []).map((p: any) => ({
-      id: Number(p.id || 0),
       name: p.name || "",
-      price: Number(p.price || 0),
-      quantity: Number(p.quantity || 1),
+      price: Number(p.price) || 0,
+      quantity: Number(p.quantity) || 1,
     }));
 
     /* CREATE SERVICE */
@@ -149,75 +154,57 @@ export async function POST(req: Request) {
       roId: roId || null,
       date: new Date(date || new Date()),
       parts: safeParts,
-      serviceCharge: Number(serviceCharge || 0),
-      discountPercent: Number(discountPercent || 0),
-      discountAmount: Number(discountAmount || 0),
-      totalAmount: Number(totalAmount || 0),
+      serviceCharge: Number(serviceCharge) || 0,
+      discountPercent: Number(discountPercent) || 0,
+      discountAmount: Number(discountAmount) || 0,
+      totalAmount: Number(totalAmount) || 0,
       startAmc: Boolean(startAmc),
     });
 
-    /* START AMC FROM SERVICE */
+    /* ======================
+       START AMC
+    ====================== */
 
-    if (startAmc) {
-
-      if (!roId) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: "RO is required to start AMC",
-          }),
-          { status: 400, headers: getCorsHeaders(origin) }
-        );
-      }
-
-      /* Prevent duplicate AMC */
+    if (startAmc && roId) {
 
       const existingAMC = await AMC.findOne({
         roId,
         status: "ACTIVE",
       });
 
-      if (existingAMC) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: "AMC already active for this RO",
-          }),
-          { status: 400, headers: getCorsHeaders(origin) }
-        );
+      if (!existingAMC) {
+
+        const start = new Date(date || new Date());
+
+        const addMonths = (d: Date, m: number) => {
+          const x = new Date(d);
+          x.setMonth(x.getMonth() + m);
+          return x;
+        };
+
+        await AMC.create({
+          customerId,
+          roId,
+          startDate: start,
+
+          fourMonth: {
+            date: addMonths(start, 4),
+            completed: false,
+          },
+
+          eightMonth: {
+            date: addMonths(start, 8),
+            completed: false,
+          },
+
+          twelveMonth: {
+            date: addMonths(start, 12),
+            completed: false,
+          },
+
+          status: "ACTIVE",
+        });
       }
-
-      const start = new Date(date || new Date());
-
-      const addMonths = (d: Date, m: number) => {
-        const x = new Date(d);
-        x.setMonth(x.getMonth() + m);
-        return x;
-      };
-
-      await AMC.create({
-        customerId,
-        roId,
-        startDate: start,
-
-        fourMonth: {
-          date: addMonths(start, 4),
-          completed: false,
-        },
-
-        eightMonth: {
-          date: addMonths(start, 8),
-          completed: false,
-        },
-
-        twelveMonth: {
-          date: addMonths(start, 12),
-          completed: false,
-        },
-
-        status: "ACTIVE",
-      });
-
     }
 
     return new Response(
@@ -243,6 +230,5 @@ export async function POST(req: Request) {
         headers: getCorsHeaders(origin),
       }
     );
-
   }
 }

@@ -150,7 +150,6 @@ const AddService = () => {
           customerId,
 
           parts: selectedParts.map(p => ({
-            id: Number(p.id),
             name: p.name,
             price: Number(p.price),
             quantity: Number(p.quantity)
