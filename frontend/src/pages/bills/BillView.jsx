@@ -8,6 +8,8 @@ const BillView = () => {
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const AMC_PRICE = 3000;
+
   const owner = {
     name: "Mineral Jal",
     ownerName: "Robin Taneja",
@@ -86,6 +88,8 @@ const BillView = () => {
     ? Number(bill?.serviceCharge || 0)
     : Number(bill?.installationCost || 0);
 
+  const amcCharge = bill?.startAmc ? AMC_PRICE : 0;
+
   const partsTotal = parts.reduce(
     (sum, p) =>
       sum +
@@ -94,7 +98,7 @@ const BillView = () => {
     0
   );
 
-  const subTotal = partsTotal + extraCharge;
+  const subTotal = partsTotal + extraCharge + amcCharge;
 
   /* ===========================
      PRINT
@@ -183,82 +187,74 @@ const BillView = () => {
         {/* ITEMS TABLE */}
 
         <table className="invoice-table">
-  <thead>
-    <tr>
-      <th>S.No.</th>
-      <th>Item Description</th>
-      <th style={{ textAlign: "center" }}>Qty</th>
-      <th style={{ textAlign: "right" }}>Price (₹)</th>
-      <th style={{ textAlign: "right" }}>Amount (₹)</th>
-    </tr>
-  </thead>
+          <thead>
+            <tr>
+              <th>S.No.</th>
+              <th>Item Description</th>
+              <th style={{ textAlign: "center" }}>Qty</th>
+              <th style={{ textAlign: "right" }}>Price (₹)</th>
+              <th style={{ textAlign: "right" }}>Amount (₹)</th>
+            </tr>
+          </thead>
 
-  <tbody>
-    {parts.map((part, index) => {
-      const qty = Number(part.quantity || 1);
-      const price = Number(part.price || 0);
-      const amount = qty * price;
+          <tbody>
 
-      return (
-        <tr key={part.id || index}>
-          <td>{index + 1}</td>
+            {parts.map((part, index) => {
+              const qty = Number(part.quantity || 1);
+              const price = Number(part.price || 0);
+              const amount = qty * price;
 
-          <td>{part.name}</td>
+              return (
+                <tr key={part.id || index}>
+                  <td>{index + 1}</td>
+                  <td>{part.name}</td>
+                  <td style={{ textAlign: "center" }}>{qty}</td>
+                  <td style={{ textAlign: "right" }}>₹{price}</td>
+                  <td style={{ textAlign: "right" }}>₹{amount}</td>
+                </tr>
+              );
+            })}
 
-          <td style={{ textAlign: "center" }}>
-            {qty}
-          </td>
+            {/* Service / Installation */}
 
-          <td style={{ textAlign: "right" }}>
-            ₹{price}
-          </td>
+            <tr>
+              <td>{parts.length + 1}</td>
+              <td>
+                {isService
+                  ? "Service Charges"
+                  : "Installation Charges"}
+              </td>
+              <td style={{ textAlign: "center" }}>1</td>
+              <td style={{ textAlign: "right" }}>₹{extraCharge}</td>
+              <td style={{ textAlign: "right" }}>₹{extraCharge}</td>
+            </tr>
 
-          <td style={{ textAlign: "right" }}>
-            ₹{amount}
-          </td>
-        </tr>
-      );
-    })}
+            {/* AMC */}
 
-    {/* Service / Installation */}
+            {bill.startAmc && (
+              <tr>
+                <td>{parts.length + 2}</td>
+                <td>AMC (1 Year)</td>
+                <td style={{ textAlign: "center" }}>1</td>
+                <td style={{ textAlign: "right" }}>₹{AMC_PRICE}</td>
+                <td style={{ textAlign: "right" }}>₹{AMC_PRICE}</td>
+              </tr>
+            )}
 
-    <tr>
-      <td>{parts.length + 1}</td>
+            {/* Discount */}
 
-      <td>
-        {isService
-          ? "Service Charges"
-          : "Installation Charges"}
-      </td>
+            <tr>
+              <td>{parts.length + (bill.startAmc ? 3 : 2)}</td>
+              <td>Discount</td>
+              <td style={{ textAlign: "center" }}>-</td>
+              <td style={{ textAlign: "right" }}>-</td>
+              <td style={{ textAlign: "right" }}>
+                - ₹{bill.discountAmount || 0}
+              </td>
+            </tr>
 
-      <td style={{ textAlign: "center" }}>1</td>
-
-      <td style={{ textAlign: "right" }}>
-        ₹{extraCharge}
-      </td>
-
-      <td style={{ textAlign: "right" }}>
-        ₹{extraCharge}
-      </td>
-    </tr>
-
-    {/* Discount */}
-
-    <tr>
-      <td>{parts.length + 2}</td>
-
-      <td>Discount</td>
-
-      <td style={{ textAlign: "center" }}>-</td>
-
-      <td style={{ textAlign: "right" }}>-</td>
-
-      <td style={{ textAlign: "right" }}>
-        - ₹{bill.discountAmount || 0}
-      </td>
-    </tr>
-  </tbody>
-</table>
+          </tbody>
+        </table>
 
         {/* TOTAL */}
 
