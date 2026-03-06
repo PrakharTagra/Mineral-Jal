@@ -18,9 +18,6 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-/* ===========================
-   OPTIONS
-=========================== */
 export async function OPTIONS(req: Request) {
   return new Response(null, {
     status: 200,
@@ -28,38 +25,59 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-/* ===========================
-   GET
-=========================== */
 export async function GET(req: Request) {
-  await connectDB();
-
   const origin = req.headers.get("origin");
 
-  const amcs = await AMC.find()
-    .populate("customerId")
-    .populate("roId")
-    .sort({ createdAt: -1 });
+  try {
+    await connectDB();
 
-  const now = new Date();
+    const amcs = await AMC.find()
+      .populate("customerId")
+      .populate("roId")
+      .sort({ createdAt: -1 });
 
-  const formatted = amcs.map((amc) => {
-    let status = "ACTIVE";
+    const now = new Date();
 
-    if (now > amc.twelveMonth?.date) status = "EXPIRED";
-    else if (now > amc.eightMonth?.date) status = "DUE";
-    else if (now > amc.fourMonth?.date) status = "DUE";
+    const formatted = amcs.map((amc) => {
+      const four = amc.fourMonth?.date
+        ? new Date(amc.fourMonth.date)
+        : null;
 
-    return {
-      ...amc.toObject(),
-      status,
-    };
-  });
+      const eight = amc.eightMonth?.date
+        ? new Date(amc.eightMonth.date)
+        : null;
 
-  return new Response(JSON.stringify(formatted), {
-    status: 200,
-    headers: getCorsHeaders(origin),
-  });
+      const twelve = amc.twelveMonth?.date
+        ? new Date(amc.twelveMonth.date)
+        : null;
+
+      let status = "ACTIVE";
+
+      if (twelve && now > twelve) status = "EXPIRED";
+      else if (eight && now > eight) status = "DUE";
+      else if (four && now > four) status = "DUE";
+
+      return {
+        ...amc.toObject(),
+        status,
+      };
+    });
+
+    return new Response(JSON.stringify(formatted), {
+      status: 200,
+      headers: getCorsHeaders(origin),
+    });
+  } catch (error) {
+    console.error("AMC API ERROR:", error);
+
+    return new Response(
+      JSON.stringify({ error: "AMC fetch failed" }),
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  }
 }
 
 /* ===========================
