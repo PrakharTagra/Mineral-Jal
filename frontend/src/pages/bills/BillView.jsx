@@ -19,54 +19,51 @@ const BillView = () => {
   /* ===========================
      FETCH BILL
   =========================== */
-useEffect(() => {
-  if (!invoiceNumber) return;
 
-  const fetchBill = async () => {
-    try {
-      setLoading(true);
+  useEffect(() => {
+    if (!invoiceNumber) return;
 
-      let endpoint = "";
+    const fetchBill = async () => {
+      try {
+        setLoading(true);
 
-      if (invoiceNumber.startsWith("MJ-S")) {
-        endpoint = `/api/services?invoiceNumber=${invoiceNumber}`;
-      } else if (invoiceNumber.startsWith("MJ-R")) {
-        endpoint = `/api/ro?invoiceNumber=${invoiceNumber}`;
-      }
+        let endpoint = "";
 
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}${endpoint}`
-      );
+        if (invoiceNumber.startsWith("MJ-S")) {
+          endpoint = `/api/services?invoiceNumber=${invoiceNumber}`;
+        } else if (invoiceNumber.startsWith("MJ-R")) {
+          endpoint = `/api/ro?invoiceNumber=${invoiceNumber}`;
+        }
 
-      if (!res.ok) {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}${endpoint}`
+        );
+
+        if (!res.ok) {
+          setBill(null);
+          return;
+        }
+
+        const data = await res.json();
+        setBill(data || null);
+
+      } catch (error) {
+        console.error("Error fetching bill:", error);
         setBill(null);
-        return;
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setBill(data[0] || null);
-      } else {
-        setBill(data);
-      }
-
-    } catch (error) {
-      console.error("Error fetching bill:", error);
-      setBill(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchBill();
-}, [invoiceNumber]);
+    fetchBill();
+  }, [invoiceNumber]);
 
   if (!invoiceNumber) {
     return <p style={{ padding: 20 }}>Invalid invoice URL</p>;
   }
 
-  if (loading) return <Loader />; 
+  if (loading) return <Loader />;
+
   if (!bill) {
     return <p style={{ padding: 20 }}>Bill not found</p>;
   }
@@ -90,7 +87,10 @@ useEffect(() => {
     : Number(bill?.installationCost || 0);
 
   const partsTotal = parts.reduce(
-    (sum, p) => sum + Number(p.price || 0),
+    (sum, p) =>
+      sum +
+      Number(p.price || 0) *
+      Number(p.quantity || 1),
     0
   );
 
@@ -99,6 +99,7 @@ useEffect(() => {
   /* ===========================
      PRINT
   =========================== */
+
   const handleDownload = () => {
     const originalTitle = document.title;
     document.title = bill.invoiceNumber;
@@ -112,6 +113,7 @@ useEffect(() => {
 
   return (
     <div className="bill-print">
+
       <div className="bill-button">
         <button
           className="download-btn no-print"
@@ -124,6 +126,7 @@ useEffect(() => {
       <div className="bill-inner">
 
         {/* HEADER */}
+
         <div className="invoice-top">
           <div className="logo">
             <img
@@ -139,9 +142,9 @@ useEffect(() => {
         </div>
 
         {/* OWNER + CUSTOMER */}
+
         <div className="invoice-info">
 
-          {/* OWNER */}
           <div>
             <p className="info-title">From:</p>
             <p><strong>{owner.name}</strong></p>
@@ -151,7 +154,6 @@ useEffect(() => {
             <p>{owner.address}</p>
           </div>
 
-          {/* RIGHT SIDE */}
           <div className="invoice-right">
 
             <div className="invoice-meta">
@@ -164,7 +166,6 @@ useEffect(() => {
               </p>
             </div>
 
-            {/* RO Model */}
             {!isService && (
               <p><strong>Model:</strong> {bill.model}</p>
             )}
@@ -180,6 +181,7 @@ useEffect(() => {
         </div>
 
         {/* ITEMS TABLE */}
+
         <table className="invoice-table">
           <thead>
             <tr>
@@ -188,14 +190,26 @@ useEffect(() => {
               <th style={{ textAlign: "right" }}>Amount (₹)</th>
             </tr>
           </thead>
+
           <tbody>
+
             {parts.map((part, index) => (
               <tr key={part.id || index}>
+
                 <td>{index + 1}</td>
-                <td>{part.name}</td>
-                <td style={{ textAlign: "right" }}>
-                  ₹{Number(part.price)}
+
+                <td>
+                  {part.name}
+                  {part.quantity > 1 && (
+                    <span> × {part.quantity}</span>
+                  )}
                 </td>
+
+                <td style={{ textAlign: "right" }}>
+                  ₹{Number(part.price) *
+                    Number(part.quantity || 1)}
+                </td>
+
               </tr>
             ))}
 
@@ -218,11 +232,14 @@ useEffect(() => {
                 - ₹{bill.discountAmount || 0}
               </td>
             </tr>
+
           </tbody>
         </table>
 
         {/* TOTAL */}
+
         <div className="invoice-summary">
+
           <div>
             <p>Sub Total:</p>
             <p>₹{subTotal}</p>
@@ -232,20 +249,26 @@ useEffect(() => {
             <span>Total</span>
             <strong>₹{bill.totalAmount}</strong>
           </div>
+
         </div>
 
         {/* FOOTER */}
+
         <div className="invoice-footer">
+
           <div>
             <p><strong>Thank you for choosing Mineral Jal</strong></p>
             <p>Terms & Conditions apply</p>
           </div>
+
           <div className="sign">
             <p>Authorised Sign</p>
           </div>
+
         </div>
 
       </div>
+
     </div>
   );
 };
