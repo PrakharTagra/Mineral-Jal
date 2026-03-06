@@ -183,58 +183,73 @@ const BillView = () => {
         {/* ITEMS TABLE */}
 
         <table className="invoice-table">
-          <thead>
-            <tr>
-              <th>S.No.</th>
-              <th>Item Description</th>
-              <th style={{ textAlign: "right" }}>Amount (₹)</th>
-            </tr>
-          </thead>
+  <thead>
+    <tr>
+      <th>S.No.</th>
+      <th>Item Description</th>
+      <th style={{ textAlign: "center" }}>Qty</th>
+      <th style={{ textAlign: "right" }}>Amount (₹)</th>
+    </tr>
+  </thead>
 
-          <tbody>
+  <tbody>
 
-            {parts.map((part, index) => (
-              <tr key={part.id || index}>
+    {parts.map((part, index) => {
+      const qty = Number(part.quantity || 1);
+      const price = Number(part.price || 0);
+      const amount = qty * price;
 
-                <td>{index + 1}</td>
+      return (
+        <tr key={part.id || index}>
+          <td>{index + 1}</td>
 
-                <td>
-                  {part.name}
-                  {part.quantity > 1 && (
-                    <span> × {part.quantity}</span>
-                  )}
-                </td>
+          <td>{part.name}</td>
 
-                <td style={{ textAlign: "right" }}>
-                  ₹{Number(part.price) *
-                    Number(part.quantity || 1)}
-                </td>
+          <td style={{ textAlign: "center" }}>
+            {qty}
+          </td>
 
-              </tr>
-            ))}
+          <td style={{ textAlign: "right" }}>
+            ₹{amount}
+          </td>
+        </tr>
+      );
+    })}
 
-            <tr>
-              <td>{parts.length + 1}</td>
-              <td>
-                {isService
-                  ? "Service Charges"
-                  : "Installation Charges"}
-              </td>
-              <td style={{ textAlign: "right" }}>
-                ₹{extraCharge}
-              </td>
-            </tr>
+    {/* Service / Installation */}
 
-            <tr>
-              <td>{parts.length + 2}</td>
-              <td>Discount</td>
-              <td style={{ textAlign: "right" }}>
-                - ₹{bill.discountAmount || 0}
-              </td>
-            </tr>
+    <tr>
+      <td>{parts.length + 1}</td>
 
-          </tbody>
-        </table>
+      <td>
+        {isService
+          ? "Service Charges"
+          : "Installation Charges"}
+      </td>
+
+      <td style={{ textAlign: "center" }}>1</td>
+
+      <td style={{ textAlign: "right" }}>
+        ₹{extraCharge}
+      </td>
+    </tr>
+
+    {/* Discount */}
+
+    <tr>
+      <td>{parts.length + 2}</td>
+
+      <td>Discount</td>
+
+      <td style={{ textAlign: "center" }}>-</td>
+
+      <td style={{ textAlign: "right" }}>
+        - ₹{bill.discountAmount || 0}
+      </td>
+    </tr>
+
+  </tbody>
+</table>
 
         {/* TOTAL */}
 
