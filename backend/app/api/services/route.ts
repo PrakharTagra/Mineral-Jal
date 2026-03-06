@@ -1,110 +1,3 @@
-// import { connectDB } from "@/lib/mongodb";
-// import Service from "@/models/Service";
-// import Customer from "@/models/Customer";
-// import AMC from "@/models/AMC";
-
-// const allowedOrigins = [
-//   "http://localhost:5173",
-//   "https://mineral-jal.vercel.app",
-// ];
-
-// function getCorsHeaders(origin: string | null) {
-//   return {
-//     "Access-Control-Allow-Origin":
-//       origin && allowedOrigins.includes(origin)
-//         ? origin
-//         : allowedOrigins[1],
-//     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-//     "Access-Control-Allow-Headers": "Content-Type",
-//     "Content-Type": "application/json",
-//   };
-// }
-
-// export async function OPTIONS(req: Request) {
-//   return new Response(null, {
-//     status: 200,
-//     headers: getCorsHeaders(req.headers.get("origin")),
-//   });
-// }
-
-// export async function GET(req: Request) {
-//   await connectDB();
-
-//   const origin = req.headers.get("origin");
-//   const { searchParams } = new URL(req.url);
-//   const invoiceNumber = searchParams.get("invoiceNumber");
-
-//   // 🔥 Fetch by invoiceNumber
-//   if (invoiceNumber) {
-//     const single = await Service.findOne({ invoiceNumber })
-//       .populate("customerId");
-
-//     return new Response(JSON.stringify(single), {
-//       status: 200,
-//       headers: getCorsHeaders(origin),
-//     });
-//   }
-
-//   // 🔥 Fetch all services
-//   const services = await Service.find()
-//     .populate("customerId")
-//     .sort({ createdAt: -1 });
-
-//   return new Response(JSON.stringify(services), {
-//     status: 200,
-//     headers: getCorsHeaders(origin),
-//   });
-// }
-
-// export async function POST(req: Request) {
-//   await connectDB();
-
-//   const origin = req.headers.get("origin");
-//   const body = await req.json();
-
-//   const { customerId } = body;
-
-//   if (!customerId) {
-//     return new Response(
-//       JSON.stringify({
-//         success: false,
-//         message: "Customer is required",
-//       }),
-//       {
-//         status: 400,
-//         headers: getCorsHeaders(origin),
-//       }
-//     );
-//   }
-
-//   const customer = await Customer.findById(customerId);
-
-//   if (!customer) {
-//     return new Response(
-//       JSON.stringify({
-//         success: false,
-//         message: "Customer not found",
-//       }),
-//       {
-//         status: 404,
-//         headers: getCorsHeaders(origin),
-//       }
-//     );
-//   }
-
-//   const newService = await Service.create(body);
-
-//   return new Response(
-//     JSON.stringify({
-//       success: true,
-//       service: newService,
-//     }),
-//     {
-//       status: 201,
-//       headers: getCorsHeaders(origin),
-//     }
-//   );
-// }
 import { connectDB } from "@/lib/mongodb";
 import Service from "@/models/Service";
 import Customer from "@/models/Customer";
@@ -147,24 +40,39 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const invoiceNumber = searchParams.get("invoiceNumber");
 
-  if (invoiceNumber) {
-    const single = await Service.findOne({ invoiceNumber })
-      .populate("customerId");
+  try {
+    if (invoiceNumber) {
+      const service = await Service.findOne({
+        invoiceNumber,
+      }).populate("customerId");
 
-    return new Response(JSON.stringify(single), {
+      return new Response(JSON.stringify(service), {
+        status: 200,
+        headers: getCorsHeaders(origin),
+      });
+    }
+
+    const services = await Service.find()
+      .populate("customerId")
+      .sort({ createdAt: -1 });
+
+    return new Response(JSON.stringify(services), {
       status: 200,
       headers: getCorsHeaders(origin),
     });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Failed to fetch services",
+        error,
+      }),
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
+    );
   }
-
-  const services = await Service.find()
-    .populate("customerId")
-    .sort({ createdAt: -1 });
-
-  return new Response(JSON.stringify(services), {
-    status: 200,
-    headers: getCorsHeaders(origin),
-  });
 }
 
 /* ===========================
@@ -174,100 +82,136 @@ export async function POST(req: Request) {
   await connectDB();
 
   const origin = req.headers.get("origin");
-  const body = await req.json();
 
-  const {
-    invoiceNumber,
-    customerId,
-    date,
-    parts,
-    serviceCharge,
-    discountPercent,
-    discountAmount,
-    totalAmount,
-    startAmc,
-  } = body;
+  try {
+    const body = await req.json();
 
-  if (!customerId) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Customer is required",
-      }),
-      {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      }
-    );
-  }
-
-  const customer = await Customer.findById(customerId);
-
-  if (!customer) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Customer not found",
-      }),
-      {
-        status: 404,
-        headers: getCorsHeaders(origin),
-      }
-    );
-  }
-
-  /* 🔹 Create Service */
-  const newService = await Service.create({
-    invoiceNumber,
-    customerId,
-    date,
-    parts,
-    serviceCharge,
-    discountPercent,
-    discountAmount,
-    totalAmount,
-    startAmc,
-  });
-
-  /* 🔥 Create AMC if selected */
-  /* 🔥 Create AMC if selected */
-if (startAmc) {
-  const existingAMC = await AMC.findOne({
-    customerId,
-    status: "ACTIVE",
-  });
-
-  if (!existingAMC) {
-    const start = new Date(date || new Date());
-
-    const fourMonth = new Date(start);
-    fourMonth.setMonth(start.getMonth() + 4);
-
-    const eightMonth = new Date(start);
-    eightMonth.setMonth(start.getMonth() + 8);
-
-    const twelveMonth = new Date(start);
-    twelveMonth.setMonth(start.getMonth() + 12);
-
-    await AMC.create({
+    const {
+      invoiceNumber,
       customerId,
-      startDate: start,
-      fourMonth: { date: fourMonth },
-      eightMonth: { date: eightMonth },
-      twelveMonth: { date: twelveMonth },
-      status: "ACTIVE",
-    });
-  }
-}
+      date,
+      parts,
+      serviceCharge,
+      discountPercent,
+      discountAmount,
+      totalAmount,
+      startAmc,
+    } = body;
 
-  return new Response(
-    JSON.stringify({
-      success: true,
-      service: newService,
-    }),
-    {
-      status: 201,
-      headers: getCorsHeaders(origin),
+    if (!customerId) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Customer is required",
+        }),
+        {
+          status: 400,
+          headers: getCorsHeaders(origin),
+        }
+      );
     }
-  );
+
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Customer not found",
+        }),
+        {
+          status: 404,
+          headers: getCorsHeaders(origin),
+        }
+      );
+    }
+
+    /* ===========================
+       CREATE SERVICE
+    =========================== */
+
+    const newService = await Service.create({
+      invoiceNumber,
+      customerId,
+      date,
+
+      parts: parts || [],
+
+      serviceCharge: Number(serviceCharge || 0),
+      discountPercent: Number(discountPercent || 0),
+      discountAmount: Number(discountAmount || 0),
+      totalAmount: Number(totalAmount || 0),
+
+      startAmc: Boolean(startAmc),
+    });
+
+    /* ===========================
+       CREATE AMC IF REQUIRED
+    =========================== */
+
+    if (startAmc) {
+      const existingAMC = await AMC.findOne({
+        customerId,
+        serviceId: newService._id,
+        status: "ACTIVE",
+      });
+
+      if (!existingAMC) {
+        const start = new Date(date || new Date());
+
+        const addMonths = (date: Date, months: number) => {
+          const d = new Date(date);
+          d.setMonth(d.getMonth() + months);
+          return d;
+        };
+
+        await AMC.create({
+          customerId,
+          serviceId: newService._id,
+
+          startDate: start,
+
+          fourMonth: {
+            date: addMonths(start, 4),
+            completed: false,
+          },
+
+          eightMonth: {
+            date: addMonths(start, 8),
+            completed: false,
+          },
+
+          twelveMonth: {
+            date: addMonths(start, 12),
+            completed: false,
+          },
+
+          status: "ACTIVE",
+        });
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        service: newService,
+      }),
+      {
+        status: 201,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Service creation failed",
+        error,
+      }),
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  }
 }

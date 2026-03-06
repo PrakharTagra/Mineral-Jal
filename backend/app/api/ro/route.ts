@@ -1,166 +1,3 @@
-// import { connectDB } from "@/lib/mongodb";
-// import RO from "@/models/RO";
-// import Customer from "@/models/Customer";
-// import AMC from "@/models/AMC";
-
-// const allowedOrigins = [
-//   "http://localhost:5173",
-//   "https://mineral-jal.vercel.app",
-// ];
-
-// function getCorsHeaders(origin: string | null) {
-//   return {
-//     "Access-Control-Allow-Origin":
-//       origin && allowedOrigins.includes(origin)
-//         ? origin
-//         : allowedOrigins[1],
-//     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-//     "Access-Control-Allow-Headers": "Content-Type",
-//     "Content-Type": "application/json",
-//   };
-// }
-
-// /* ===========================
-//    OPTIONS
-// =========================== */
-// export async function OPTIONS(req: Request) {
-//   return new Response(null, {
-//     status: 200,
-//     headers: getCorsHeaders(req.headers.get("origin")),
-//   });
-// }
-
-// /* ===========================
-//    GET
-//    /api/ro
-//    /api/ro?id=...
-//    /api/ro?invoiceNumber=...
-// =========================== */
-// export async function GET(req: Request) {
-//   await connectDB();
-
-//   const origin = req.headers.get("origin");
-//   const { searchParams } = new URL(req.url);
-
-//   const id = searchParams.get("id");
-//   const invoiceNumber = searchParams.get("invoiceNumber");
-
-//   // 🔥 Fetch by invoiceNumber
-//   if (invoiceNumber) {
-//     const single = await RO.findOne({ invoiceNumber })
-//       .populate("customerId");
-
-//     return new Response(JSON.stringify(single), {
-//       status: 200,
-//       headers: getCorsHeaders(origin),
-//     });
-//   }
-
-//   // 🔥 Fetch by id
-//   if (id) {
-//     const single = await RO.findById(id)
-//       .populate("customerId");
-
-//     return new Response(JSON.stringify(single), {
-//       status: 200,
-//       headers: getCorsHeaders(origin),
-//     });
-//   }
-
-//   // 🔥 Fetch all
-//   const ros = await RO.find()
-//     .populate("customerId")
-//     .sort({ createdAt: -1 });
-
-//   return new Response(JSON.stringify(ros), {
-//     status: 200,
-//     headers: getCorsHeaders(origin),
-//   });
-// }
-
-// /* ===========================
-//    POST
-// =========================== */
-// export async function POST(req: Request) {
-//   await connectDB();
-
-//   const origin = req.headers.get("origin");
-//   const body = await req.json();
-
-//   const {
-//     invoiceNumber,
-//     customerId,
-//     model,
-//     installDate,
-//     note,
-//     components,
-//     installationCost,
-//     discountPercent,
-//     discountAmount,
-//     totalAmount,
-//     startAmc,
-//   } = body;
-
-//   if (!customerId) {
-//     return new Response(
-//       JSON.stringify({
-//         success: false,
-//         message: "Customer is required",
-//       }),
-//       {
-//         status: 400,
-//         headers: getCorsHeaders(origin),
-//       }
-//     );
-//   }
-
-//   const customer = await Customer.findById(customerId);
-
-//   if (!customer) {
-//     return new Response(
-//       JSON.stringify({
-//         success: false,
-//         message: "Customer not found",
-//       }),
-//       {
-//         status: 404,
-//         headers: getCorsHeaders(origin),
-//       }
-//     );
-//   }
-
-//   const newRO = await RO.create({
-//     invoiceNumber,
-//     customerId,
-//     model,
-//     installDate,
-//     note,
-//     components: components || [],
-//     installationCost: Number(installationCost || 0),
-//     discountPercent: Number(discountPercent || 0),
-//     discountAmount: Number(discountAmount || 0),
-//     totalAmount: Number(totalAmount || 0),
-//     startAmc: Boolean(startAmc),
-//   });
-
-//   return new Response(
-//     JSON.stringify({
-//       success: true,
-//       ro: newRO,
-//     }),
-//     {
-//       status: 201,
-//       headers: getCorsHeaders(origin),
-//     }
-//   );
-//   if (startAmc) {
-//   await AMC.create({
-//     customerId,
-//     roId: newRO._id,
-//     startDate: new Date(),
-//   });
-// }
-// }
 import { connectDB } from "@/lib/mongodb";
 import RO from "@/models/RO";
 import Customer from "@/models/Customer";
@@ -183,9 +20,10 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-/* ===========================
+/* =========================
    OPTIONS
-=========================== */
+========================= */
+
 export async function OPTIONS(req: Request) {
   return new Response(null, {
     status: 200,
@@ -193,9 +31,10 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-/* ===========================
+/* =========================
    GET
-=========================== */
+========================= */
+
 export async function GET(req: Request) {
   await connectDB();
 
@@ -205,143 +44,185 @@ export async function GET(req: Request) {
   const id = searchParams.get("id");
   const invoiceNumber = searchParams.get("invoiceNumber");
 
-  if (invoiceNumber) {
-    const single = await RO.findOne({ invoiceNumber })
-      .populate("customerId");
+  try {
+    if (invoiceNumber) {
+      const ro = await RO.findOne({ invoiceNumber }).populate("customerId");
 
-    return new Response(JSON.stringify(single), {
+      return new Response(JSON.stringify(ro), {
+        status: 200,
+        headers: getCorsHeaders(origin),
+      });
+    }
+
+    if (id) {
+      const ro = await RO.findById(id).populate("customerId");
+
+      return new Response(JSON.stringify(ro), {
+        status: 200,
+        headers: getCorsHeaders(origin),
+      });
+    }
+
+    const ros = await RO.find()
+      .populate("customerId")
+      .sort({ createdAt: -1 });
+
+    return new Response(JSON.stringify(ros), {
       status: 200,
       headers: getCorsHeaders(origin),
     });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Failed to fetch RO",
+        error,
+      }),
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
+    );
   }
-
-  if (id) {
-    const single = await RO.findById(id)
-      .populate("customerId");
-
-    return new Response(JSON.stringify(single), {
-      status: 200,
-      headers: getCorsHeaders(origin),
-    });
-  }
-
-  const ros = await RO.find()
-    .populate("customerId")
-    .sort({ createdAt: -1 });
-
-  return new Response(JSON.stringify(ros), {
-    status: 200,
-    headers: getCorsHeaders(origin),
-  });
 }
 
-/* ===========================
+/* =========================
    POST
-=========================== */
+========================= */
+
 export async function POST(req: Request) {
   await connectDB();
 
   const origin = req.headers.get("origin");
-  const body = await req.json();
 
-  const {
-    invoiceNumber,
-    customerId,
-    model,
-    installDate,
-    note,
-    components,
-    installationCost,
-    discountPercent,
-    discountAmount,
-    totalAmount,
-    startAmc,
-  } = body;
+  try {
+    const body = await req.json();
 
-  if (!customerId) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Customer is required",
-      }),
-      {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      }
-    );
-  }
-
-  const customer = await Customer.findById(customerId);
-
-  if (!customer) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Customer not found",
-      }),
-      {
-        status: 404,
-        headers: getCorsHeaders(origin),
-      }
-    );
-  }
-
-  /* 🔹 Create RO */
-  const newRO = await RO.create({
-    invoiceNumber,
-    customerId,
-    model,
-    installDate,
-    note,
-    components: components || [],
-    installationCost: Number(installationCost || 0),
-    discountPercent: Number(discountPercent || 0),
-    discountAmount: Number(discountAmount || 0),
-    totalAmount: Number(totalAmount || 0),
-    startAmc: Boolean(startAmc),
-  });
-
-  /* 🔥 Create AMC automatically if selected */
-  /* 🔥 Create AMC automatically if selected */
-if (startAmc) {
-  const existingAMC = await AMC.findOne({
-    customerId,
-    roId: newRO._id,
-    status: "ACTIVE",
-  });
-
-  if (!existingAMC) {
-    const start = new Date(installDate || new Date());
-
-    const fourMonth = new Date(start);
-    fourMonth.setMonth(start.getMonth() + 4);
-
-    const eightMonth = new Date(start);
-    eightMonth.setMonth(start.getMonth() + 8);
-
-    const twelveMonth = new Date(start);
-    twelveMonth.setMonth(start.getMonth() + 12);
-
-    await AMC.create({
+    const {
+      invoiceNumber,
       customerId,
-      roId: newRO._id,
-      startDate: start,
-      fourMonth: { date: fourMonth },
-      eightMonth: { date: eightMonth },
-      twelveMonth: { date: twelveMonth },
-      status: "ACTIVE",
-    });
-  }
-}
+      model,
+      installDate,
+      note,
+      components,
+      installationCost,
+      discountPercent,
+      discountAmount,
+      totalAmount,
+      startAmc,
+    } = body;
 
-  return new Response(
-    JSON.stringify({
-      success: true,
-      ro: newRO,
-    }),
-    {
-      status: 201,
-      headers: getCorsHeaders(origin),
+    if (!customerId) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Customer is required",
+        }),
+        {
+          status: 400,
+          headers: getCorsHeaders(origin),
+        }
+      );
     }
-  );
+
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Customer not found",
+        }),
+        {
+          status: 404,
+          headers: getCorsHeaders(origin),
+        }
+      );
+    }
+
+    /* =========================
+       CREATE RO
+    ========================= */
+
+    const newRO = await RO.create({
+      invoiceNumber,
+      customerId,
+      model,
+      installDate,
+      note,
+      components: components || [],
+      installationCost: Number(installationCost || 0),
+      discountPercent: Number(discountPercent || 0),
+      discountAmount: Number(discountAmount || 0),
+      totalAmount: Number(totalAmount || 0),
+      startAmc: Boolean(startAmc),
+    });
+
+    /* =========================
+       AUTO CREATE AMC
+    ========================= */
+
+    if (startAmc) {
+      const existingAMC = await AMC.findOne({
+        roId: newRO._id,
+        status: "ACTIVE",
+      });
+
+      if (!existingAMC) {
+        const start = new Date(installDate || new Date());
+
+        const addMonths = (date: Date, months: number) => {
+          const d = new Date(date);
+          d.setMonth(d.getMonth() + months);
+          return d;
+        };
+
+        await AMC.create({
+          customerId,
+          roId: newRO._id,
+          startDate: start,
+
+          fourMonth: {
+            date: addMonths(start, 4),
+            completed: false,
+          },
+
+          eightMonth: {
+            date: addMonths(start, 8),
+            completed: false,
+          },
+
+          twelveMonth: {
+            date: addMonths(start, 12),
+            completed: false,
+          },
+
+          status: "ACTIVE",
+        });
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        ro: newRO,
+      }),
+      {
+        status: 201,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "RO creation failed",
+        error,
+      }),
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  }
 }
