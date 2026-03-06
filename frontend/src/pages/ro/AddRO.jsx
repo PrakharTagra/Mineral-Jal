@@ -52,7 +52,7 @@ const AddRO = () => {
 
   /* ---------------- PARTS ---------------- */
   const [selectedParts, setSelectedParts] = useState([]);
-  const [installationCharge, setInstallationCharge] = useState("1000");
+  const [installationCharge, setInstallationCharge] = useState("350");
   const [discountPercent, setDiscountPercent] = useState("");
   const [startAmc, setStartAmc] = useState(false);
 

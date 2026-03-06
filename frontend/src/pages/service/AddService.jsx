@@ -330,7 +330,7 @@ const handleSave = async () => {
           <label>Service Charge (₹)</label>
           <input
             type="number"
-            placeholder="300"
+            placeholder="200"
             value={serviceCharge}
             onChange={(e) =>
               setServiceCharge(Number(e.target.value) || 0)
