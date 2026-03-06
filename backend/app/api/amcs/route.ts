@@ -1,13 +1,45 @@
 import { connectDB } from "@/lib/mongodb";
 import AMC from "@/models/AMC";
 
-export async function GET() {
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://mineral-jal.vercel.app",
+];
+
+function getCorsHeaders(origin: string | null) {
+  return {
+    "Access-Control-Allow-Origin":
+      origin && allowedOrigins.includes(origin)
+        ? origin
+        : allowedOrigins[1],
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json",
+  };
+}
+
+/* ===========================
+   OPTIONS
+=========================== */
+export async function OPTIONS(req: Request) {
+  return new Response(null, {
+    status: 200,
+    headers: getCorsHeaders(req.headers.get("origin")),
+  });
+}
+
+/* ===========================
+   GET
+=========================== */
+export async function GET(req: Request) {
   await connectDB();
+
+  const origin = req.headers.get("origin");
 
   const amcs = await AMC.find()
     .populate("customerId")
     .populate("roId")
-    .sort({ startDate: -1 });
+    .sort({ createdAt: -1 });
 
   const now = new Date();
 
@@ -24,12 +56,19 @@ export async function GET() {
     };
   });
 
-  return Response.json(formatted);
+  return new Response(JSON.stringify(formatted), {
+    status: 200,
+    headers: getCorsHeaders(origin),
+  });
 }
 
+/* ===========================
+   POST
+=========================== */
 export async function POST(req: Request) {
   await connectDB();
 
+  const origin = req.headers.get("origin");
   const body = await req.json();
 
   const start = new Date(body.startDate);
@@ -47,14 +86,19 @@ export async function POST(req: Request) {
     customerId: body.customerId,
     roId: body.roId,
     startDate: start,
-
     fourMonth: { date: fourMonth },
     eightMonth: { date: eightMonth },
     twelveMonth: { date: twelveMonth },
   });
 
-  return Response.json({
-    success: true,
-    amc,
-  });
+  return new Response(
+    JSON.stringify({
+      success: true,
+      amc,
+    }),
+    {
+      status: 201,
+      headers: getCorsHeaders(origin),
+    }
+  );
 }
