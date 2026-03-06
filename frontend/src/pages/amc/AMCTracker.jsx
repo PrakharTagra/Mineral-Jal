@@ -16,46 +16,12 @@ const AMCTracker = () => {
         setLoading(true);
 
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/ro`
+          `${import.meta.env.VITE_API_URL}/api/amcs`
         );
 
-        const ros = await res.json();
+        const data = await res.json();
 
-        const amcList = ros
-          .filter((ro) => ro.startAmc)
-          .map((ro) => {
-            const start = new Date(ro.installDate);
-
-            const fourMonth = new Date(start);
-            fourMonth.setMonth(start.getMonth() + 4);
-
-            const eightMonth = new Date(start);
-            eightMonth.setMonth(start.getMonth() + 8);
-
-            const twelveMonth = new Date(start);
-            twelveMonth.setMonth(start.getMonth() + 12);
-
-            const now = new Date();
-
-            let status = "ACTIVE";
-
-            if (now > twelveMonth) status = "EXPIRED";
-            else if (now > eightMonth) status = "DUE";
-            else if (now > fourMonth) status = "DUE";
-
-            return {
-              id: ro._id,
-              customer: ro.customerId?.name || "Customer",
-              roModel: ro.model,
-              startDate: ro.installDate,
-              fourMonth,
-              eightMonth,
-              twelveMonth,
-              status,
-            };
-          });
-
-        setAmcs(amcList);
+        setAmcs(data);
       } catch (error) {
         console.error("AMC fetch error:", error);
       } finally {
@@ -79,7 +45,6 @@ const AMCTracker = () => {
     <div className="amc-container">
       <h2>AMC Tracker</h2>
 
-      {/* Tabs */}
       <div className="tabs">
         <button
           className={tab === "ACTIVE" ? "active" : ""}
@@ -103,85 +68,37 @@ const AMCTracker = () => {
         </button>
       </div>
 
-      {/* List */}
       <div className="list">
         {filtered.length === 0 && (
           <p className="empty">No records found</p>
         )}
 
-        {filtered.map((amc) => {
-          const showRenew =
-            new Date() > new Date(amc.twelveMonth);
+        {filtered.map((amc) => (
+          <div
+            key={amc._id}
+            className="amc-card clickable"
+            onClick={() => navigate(`/amc/${amc._id}`)}
+          >
+            <div>
+              <strong>{amc.customerId?.name}</strong>
 
-          return (
-            <div
-              key={amc.id}
-              className="amc-card clickable"
-              onClick={() => navigate(`/customer/${amc.id}`)}
-            >
-              <div>
-                <strong>{amc.customer}</strong>
-                <p className="muted">{amc.roModel}</p>
+              <p className="muted">
+                {amc.roId?.model || "RO"}
+              </p>
 
-                <p className="muted">
-                  4 Month:{" "}
-                  {new Date() > amc.fourMonth
-                    ? "✔ Completed"
-                    : new Date(amc.fourMonth).toLocaleDateString()}
-                </p>
-
-                <p className="muted">
-                  8 Month:{" "}
-                  {new Date() > amc.eightMonth
-                    ? "✔ Completed"
-                    : new Date(amc.eightMonth).toLocaleDateString()}
-                </p>
-
-                <p className="muted">
-                  12 Month:{" "}
-                  {new Date() > amc.twelveMonth
-                    ? "✔ Completed"
-                    : new Date(amc.twelveMonth).toLocaleDateString()}
-                </p>
-
-                {amc.status === "EXPIRED" && (
-                  <p className="expired-text">
-                    Expired on{" "}
-                    {new Date(amc.twelveMonth).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-
-              <div className="actions">
-                {amc.status !== "EXPIRED" && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate("/add-service", {
-                        state: { customerId: amc.id },
-                      });
-                    }}
-                  >
-                    🛠 Service
-                  </button>
-                )}
-
-                {showRenew && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate("/add-ro", {
-                        state: { customerId: amc.id },
-                      });
-                    }}
-                  >
-                    🔁 Renew
-                  </button>
-                )}
-              </div>
+              <p className="muted">
+                Start:{" "}
+                {new Date(
+                  amc.startDate
+                ).toLocaleDateString()}
+              </p>
             </div>
-          );
-        })}
+
+            <span className={`status ${amc.status}`}>
+              {amc.status}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

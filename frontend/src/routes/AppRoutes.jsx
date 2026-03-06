@@ -10,6 +10,7 @@ import CustomerProfile from "../pages/customers/CustomerProfile";
 import BillView from "../pages/bills/BillView";
 import Bills from "../pages/bills/Bills";
 import AdminLogin from "../pages/AdminLogin";
+import AmcDetails from "../pages/amc/AMCDetails";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("adminToken");
@@ -122,6 +123,17 @@ const AppRoutes = () => {
             </MainLayout>
           </ProtectedRoute>
         }
+      />
+
+      <Route 
+        path="/amc/:id" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <AmcDetails />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
       />
 
     </Routes>
