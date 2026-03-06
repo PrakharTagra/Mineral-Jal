@@ -48,7 +48,7 @@ const AddService = () => {
   };
 
   const [selectedParts, setSelectedParts] = useState([]);
-  const [serviceCharge, setServiceCharge] = useState(300);
+  const [serviceCharge, setServiceCharge] = useState(200);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [startAmc, setStartAmc] = useState(false);
 
@@ -67,13 +67,15 @@ const AddService = () => {
           name: part.name,
           price: String(part.price),
           basePrice: part.price,
+          quantity: 1,
         },
       ];
     });
   };  
 
   const partsTotal = selectedParts.reduce(
-    (sum, part) => sum + Number(part.price || 0),
+    (sum, part) =>
+      sum + Number(part.price || 0) * Number(part.quantity || 1),
     0
   );
 
@@ -158,6 +160,23 @@ const handleSave = async () => {
       )
     );
   };
+  const increaseQty = (id) => {
+  setSelectedParts((prev) =>
+    prev.map((p) =>
+      p.id === id ? { ...p, quantity: p.quantity + 1 } : p
+    )
+  );
+};
+
+const decreaseQty = (id) => {
+  setSelectedParts((prev) =>
+    prev.map((p) =>
+      p.id === id
+        ? { ...p, quantity: Math.max(1, p.quantity - 1) }
+        : p
+    )
+  );
+};
   const filteredCustomers = customers.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.phone.includes(searchTerm)
@@ -293,17 +312,44 @@ const handleSave = async () => {
                 <span className="part-name">{part.name}</span>
 
                 {selected ? (
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="part-price-input"
-                    value={selected.price}
-                    placeholder="0"
+                  <div
+                    className="part-controls"
                     onClick={(e) => e.stopPropagation()}
-                    onChange={(e) =>
-                      updatePartPrice(part.id, e.target.value)
-                    }
-                  />
+                  >
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      className="part-price-input"
+                      value={selected.price}
+                      onChange={(e) =>
+                        updatePartPrice(part.id, e.target.value)
+                      }
+                    />
+
+                    <div className="qty-control">
+
+                      <button
+                        type="button"
+                        className="qtybutton"
+                        onClick={() => decreaseQty(part.id)}
+                      >
+                        −
+                      </button>
+
+                      <span className="qty">{selected.quantity}</span>
+
+                      <button
+                        type="button"
+                        className="qtybutton"
+                        onClick={() => increaseQty(part.id)}
+                      >
+                        +
+                      </button>
+
+                    </div>
+
+                  </div>
                 ) : (
                   <span className="part-price">
                     ₹{part.price}

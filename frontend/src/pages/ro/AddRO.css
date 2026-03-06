@@ -22,3 +22,14 @@ textarea {
 .amc-option input {
   width: auto;
 }
+
+.qty{
+  font-size: 15px;
+  color: white;
+  margin: 5px;
+}
+.qtybutton{
+  border-radius: 100%;
+  font-size: 20px;
+
+}
