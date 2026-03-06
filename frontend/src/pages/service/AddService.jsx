@@ -56,17 +56,19 @@ const AddService = () => {
   const [startAmc, setStartAmc] = useState(false);
 
   const togglePart = (part) => {
+    const id = Number(part.id);
+
     setSelectedParts((prev) => {
-      const exists = prev.find((p) => p.id === Number(part.id));
+      const exists = prev.find((p) => p.id === id);
 
       if (exists) {
-        return prev.filter((p) => p.id !== Number(part.id));
+        return prev.filter((p) => p.id !== id);
       }
 
       return [
         ...prev,
         {
-          id: Number(part.id),
+          id,
           name: part.name,
           price: String(part.price),
           basePrice: part.price,
@@ -74,7 +76,7 @@ const AddService = () => {
         },
       ];
     });
-  };  
+  }; 
 
   const partsTotal = selectedParts.reduce(
     (sum, part) =>
@@ -328,65 +330,67 @@ const decreaseQty = (id) => {
 
         <div className="parts-grid">
           {RO_PARTS.map((part) => {
-            const selected = selectedParts.find(
-              (p) => p.id === Number(part.id)
-            );
+          const id = Number(part.id);   // compute once
 
-            return (
-              <div
-                key={Number(part.id)}
-                className={`part-item ${selected ? "selected" : ""}`}
-                onClick={() => togglePart(part)}
-              >
-                <span className="part-name">{part.name}</span>
+          const selected = selectedParts.find(
+            (p) => p.id === id
+          );
 
-                {selected ? (
-                  <div
-                    className="part-controls"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+          return (
+            <div
+              key={id}
+              className={`part-item ${selected ? "selected" : ""}`}
+              onClick={() => togglePart(part)}
+            >
+              <span className="part-name">{part.name}</span>
 
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      className="part-price-input"
-                      value={selected.price}
-                      onChange={(e) =>
-                        updatePartPrice(Number(part.id), e.target.value)
-                      }
-                    />
+              {selected ? (
+                <div
+                  className="part-controls"
+                  onClick={(e) => e.stopPropagation()}
+                >
 
-                    <div className="qty-control">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="part-price-input"
+                    value={selected.price}
+                    onChange={(e) =>
+                      updatePartPrice(id, e.target.value)
+                    }
+                  />
 
-                      <button
-                        type="button"
-                        className="qtybutton"
-                        onClick={() => decreaseQty(Number(part.id))}
-                      >
-                        −
-                      </button>
+                  <div className="qty-control">
 
-                      <span className="qty">{selected.quantity}</span>
+                    <button
+                      type="button"
+                      className="qtybutton"
+                      onClick={() => decreaseQty(id)}
+                    >
+                      −
+                    </button>
 
-                      <button
-                        type="button"
-                        className="qtybutton"
-                        onClick={() => increaseQty(Number(part.id))}
-                      >
-                        +
-                      </button>
+                    <span className="qty">{selected.quantity}</span>
 
-                    </div>
+                    <button
+                      type="button"
+                      className="qtybutton"
+                      onClick={() => increaseQty(id)}
+                    >
+                      +
+                    </button>
 
                   </div>
-                ) : (
-                  <span className="part-price">
-                    ₹{part.price}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+
+                </div>
+              ) : (
+                <span className="part-price">
+                  ₹{part.price}
+                </span>
+              )}
+            </div>
+          );
+        })}
         </div>
       </div>
 
