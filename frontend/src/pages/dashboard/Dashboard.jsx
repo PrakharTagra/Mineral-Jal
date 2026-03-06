@@ -1,39 +1,87 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
-
-const summary = {
-  activeAmcs: 42,
-  dueSoon: 8,
-  pendingServices: 5,
-  totalCustomers: 120,
-};
-
-const todaysWork = [
-  {
-    id: 1,
-    type: "AMC Reminder",
-    customer: "Rahul Sharma",
-    detail: "4-month AMC reminder",
-  },
-  {
-    id: 2,
-    type: "Service",
-    customer: "Ankit Verma",
-    detail: "Filter replacement",
-  },
-  {
-    id: 3,
-    type: "Renewal",
-    customer: "Neha Jain",
-    detail: "AMC renewal pending",
-  },
-];
+import Loader from "../../components/Loader"; // adjust path if needed
 
 const Dashboard = () => {
   const navigate = useNavigate();
+
+  const [summary, setSummary] = useState({
+    activeAmcs: 0,
+    dueSoon: 0,
+    pendingServices: 0,
+    totalCustomers: 0,
+  });
+
+  const [todaysWork, setTodaysWork] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+
+        const [customerRes, roRes, serviceRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL}/api/customers`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/ro`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/services`),
+        ]);
+
+        const customers = await customerRes.json();
+        const ros = await roRes.json();
+        const services = await serviceRes.json();
+
+        /* ===== Summary Calculations ===== */
+
+        const activeAmcs = ros.filter((r) => r.startAmc).length;
+
+        const totalCustomers = customers.length;
+
+        const pendingServices = services.length;
+
+        /* ===== Today's Work ===== */
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        const todayServices = services
+          .filter(
+            (s) =>
+              s.date &&
+              s.date.slice(0, 10) === today
+          )
+          .map((s) => ({
+            id: s._id,
+            type: "Service",
+            customer: s.customerId?.name || "Customer",
+            detail:
+              s.parts?.map((p) => p.name).join(", ") ||
+              "Service Work",
+          }));
+
+        setSummary({
+          activeAmcs,
+          dueSoon: 0, // future AMC reminder logic
+          pendingServices,
+          totalCustomers,
+        });
+
+        setTodaysWork(todayServices);
+
+      } catch (error) {
+        console.error("Dashboard fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
+
+  if (loading) return <Loader />;
+
   return (
     <div className="dashboard-container">
+
       {/* Header */}
       <h2 className="page-title">Dashboard</h2>
 
@@ -41,7 +89,7 @@ const Dashboard = () => {
       <div className="summary-grid">
         <SummaryCard title="Active AMCs" value={summary.activeAmcs} />
         <SummaryCard title="AMCs Due Soon" value={summary.dueSoon} />
-        <SummaryCard title="Pending Services" value={summary.pendingServices} />
+        <SummaryCard title="Total Services" value={summary.pendingServices} />
         <SummaryCard title="Total Customers" value={summary.totalCustomers} />
       </div>
 
@@ -70,7 +118,9 @@ const Dashboard = () => {
         <h3>Today's Work</h3>
 
         {todaysWork.length === 0 ? (
-          <p className="empty-text">No tasks for today 🎉</p>
+          <p className="empty-text">
+            No tasks for today 🎉
+          </p>
         ) : (
           todaysWork.map((item) => (
             <div key={item.id} className="today-item">
@@ -79,13 +129,13 @@ const Dashboard = () => {
                 <p>{item.customer}</p>
                 <span>{item.detail}</span>
               </div>
+
               <button
                 className="quick-btn"
-                onClick={() => {
-                  if (item.type === "Service") navigate("/add-service");
-                  else navigate("/amc");
-                }}
-              >View</button>
+                onClick={() => navigate("/add-service")}
+              >
+                View
+              </button>
             </div>
           ))
         )}
@@ -93,6 +143,8 @@ const Dashboard = () => {
     </div>
   );
 };
+
+/* ===== Components ===== */
 
 const SummaryCard = ({ title, value }) => (
   <div className="summary-card">

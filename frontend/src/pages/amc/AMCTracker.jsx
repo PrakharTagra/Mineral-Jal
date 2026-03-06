@@ -1,33 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AMCTracker.css";
-const amcs = [
-  {
-    id: 1,
-    customer: "Rahul Sharma",
-    roModel: "AquaPro",
-    status: "ACTIVE",
-    nextReminder: "22 Aug 2026",
-  },
-  {
-    id: 2,
-    customer: "Neha Jain",
-    roModel: "Kent Grand",
-    status: "DUE",
-    nextReminder: "15 Jul 2026",
-  },
-  {
-    id: 3,
-    customer: "Ankit Verma",
-    roModel: "PureIt",
-    status: "EXPIRED",
-    expiredOn: "10 May 2026",
-  },
-];
+import Loader from "../../components/Loader";
 
 const AMCTracker = () => {
-  const [tab, setTab] = useState("ACTIVE");
   const navigate = useNavigate();
+
+  const [tab, setTab] = useState("ACTIVE");
+  const [amcs, setAmcs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAMCs = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/ro`
+        );
+
+        const ros = await res.json();
+
+        const amcList = ros
+          .filter((ro) => ro.startAmc)
+          .map((ro) => {
+            const start = new Date(ro.installDate);
+
+            const fourMonth = new Date(start);
+            fourMonth.setMonth(start.getMonth() + 4);
+
+            const eightMonth = new Date(start);
+            eightMonth.setMonth(start.getMonth() + 8);
+
+            const twelveMonth = new Date(start);
+            twelveMonth.setMonth(start.getMonth() + 12);
+
+            const now = new Date();
+
+            let status = "ACTIVE";
+
+            if (now > twelveMonth) status = "EXPIRED";
+            else if (now > eightMonth) status = "DUE";
+            else if (now > fourMonth) status = "DUE";
+
+            return {
+              id: ro._id,
+              customer: ro.customerId?.name || "Customer",
+              roModel: ro.model,
+              startDate: ro.installDate,
+              fourMonth,
+              eightMonth,
+              twelveMonth,
+              status,
+            };
+          });
+
+        setAmcs(amcList);
+      } catch (error) {
+        console.error("AMC fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAMCs();
+  }, []);
+
+  if (loading) return <Loader />;
 
   const filtered = amcs.filter((a) => {
     if (tab === "ACTIVE") return a.status === "ACTIVE";
@@ -39,7 +78,7 @@ const AMCTracker = () => {
   return (
     <div className="amc-container">
       <h2>AMC Tracker</h2>
-    
+
       {/* Tabs */}
       <div className="tabs">
         <button
@@ -48,12 +87,14 @@ const AMCTracker = () => {
         >
           Active
         </button>
+
         <button
           className={tab === "DUE" ? "active" : ""}
           onClick={() => setTab("DUE")}
         >
           Due Soon
         </button>
+
         <button
           className={tab === "EXPIRED" ? "active" : ""}
           onClick={() => setTab("EXPIRED")}
@@ -68,35 +109,79 @@ const AMCTracker = () => {
           <p className="empty">No records found</p>
         )}
 
-        {filtered.map((amc) => (
-          <div
-            key={amc.id}
-            className="amc-card clickable"
-            onClick={() => navigate(`/customer/${amc.id}`)}
-          >
-            <div>
-              <strong>{amc.customer}</strong>
-              <p className="muted">{amc.roModel}</p>
+        {filtered.map((amc) => {
+          const showRenew =
+            new Date() > new Date(amc.twelveMonth);
 
-              {amc.nextReminder && (
+          return (
+            <div
+              key={amc.id}
+              className="amc-card clickable"
+              onClick={() => navigate(`/customer/${amc.id}`)}
+            >
+              <div>
+                <strong>{amc.customer}</strong>
+                <p className="muted">{amc.roModel}</p>
+
                 <p className="muted">
-                  Next Reminder: {amc.nextReminder}
+                  4 Month:{" "}
+                  {new Date() > amc.fourMonth
+                    ? "✔ Completed"
+                    : new Date(amc.fourMonth).toLocaleDateString()}
                 </p>
-              )}
 
-              {amc.expiredOn && (
-                <p className="expired-text">
-                  Expired on {amc.expiredOn}
+                <p className="muted">
+                  8 Month:{" "}
+                  {new Date() > amc.eightMonth
+                    ? "✔ Completed"
+                    : new Date(amc.eightMonth).toLocaleDateString()}
                 </p>
-              )}
-            </div>
 
-            <div className="actions">
-              {tab !== "EXPIRED" && <button>🛠️ Service</button>}
-              <button>🔁 Renew</button>
+                <p className="muted">
+                  12 Month:{" "}
+                  {new Date() > amc.twelveMonth
+                    ? "✔ Completed"
+                    : new Date(amc.twelveMonth).toLocaleDateString()}
+                </p>
+
+                {amc.status === "EXPIRED" && (
+                  <p className="expired-text">
+                    Expired on{" "}
+                    {new Date(amc.twelveMonth).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+
+              <div className="actions">
+                {amc.status !== "EXPIRED" && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/add-service", {
+                        state: { customerId: amc.id },
+                      });
+                    }}
+                  >
+                    🛠 Service
+                  </button>
+                )}
+
+                {showRenew && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/add-ro", {
+                        state: { customerId: amc.id },
+                      });
+                    }}
+                  >
+                    🔁 Renew
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
