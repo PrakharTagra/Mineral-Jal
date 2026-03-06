@@ -18,6 +18,9 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
+/* ===========================
+   OPTIONS
+=========================== */
 export async function OPTIONS(req: Request) {
   return new Response(null, {
     status: 200,
@@ -25,6 +28,9 @@ export async function OPTIONS(req: Request) {
   });
 }
 
+/* ===========================
+   GET AMCs
+=========================== */
 export async function GET(req: Request) {
   const origin = req.headers.get("origin");
 
@@ -32,22 +38,29 @@ export async function GET(req: Request) {
     await connectDB();
 
     const amcs = await AMC.find()
-      .populate("customerId")
-      .populate("roId")
-      .sort({ createdAt: -1 });
+      .populate({
+        path: "customerId",
+        select: "name phone address",
+      })
+      .populate({
+        path: "roId",
+        select: "model",
+      })
+      .sort({ createdAt: -1 })
+      .lean();
 
     const now = new Date();
 
-    const formatted = amcs.map((amc) => {
-      const four = amc.fourMonth?.date
+    const formatted = amcs.map((amc: any) => {
+      const four = amc?.fourMonth?.date
         ? new Date(amc.fourMonth.date)
         : null;
 
-      const eight = amc.eightMonth?.date
+      const eight = amc?.eightMonth?.date
         ? new Date(amc.eightMonth.date)
         : null;
 
-      const twelve = amc.twelveMonth?.date
+      const twelve = amc?.twelveMonth?.date
         ? new Date(amc.twelveMonth.date)
         : null;
 
@@ -58,7 +71,7 @@ export async function GET(req: Request) {
       else if (four && now > four) status = "DUE";
 
       return {
-        ...amc.toObject(),
+        ...amc,
         status,
       };
     });
@@ -71,7 +84,10 @@ export async function GET(req: Request) {
     console.error("AMC API ERROR:", error);
 
     return new Response(
-      JSON.stringify({ error: "AMC fetch failed" }),
+      JSON.stringify({
+        success: false,
+        message: "AMC fetch failed",
+      }),
       {
         status: 500,
         headers: getCorsHeaders(origin),
@@ -81,42 +97,59 @@ export async function GET(req: Request) {
 }
 
 /* ===========================
-   POST
+   CREATE AMC
 =========================== */
 export async function POST(req: Request) {
-  await connectDB();
-
   const origin = req.headers.get("origin");
-  const body = await req.json();
 
-  const start = new Date(body.startDate);
+  try {
+    await connectDB();
 
-  const fourMonth = new Date(start);
-  fourMonth.setMonth(start.getMonth() + 4);
+    const body = await req.json();
 
-  const eightMonth = new Date(start);
-  eightMonth.setMonth(start.getMonth() + 8);
+    const start = new Date(body.startDate || new Date());
 
-  const twelveMonth = new Date(start);
-  twelveMonth.setMonth(start.getMonth() + 12);
+    const fourMonth = new Date(start);
+    fourMonth.setMonth(start.getMonth() + 4);
 
-  const amc = await AMC.create({
-    customerId: body.customerId,
-    roId: body.roId,
-    startDate: start,
-    fourMonth: { date: fourMonth },
-    eightMonth: { date: eightMonth },
-    twelveMonth: { date: twelveMonth },
-  });
+    const eightMonth = new Date(start);
+    eightMonth.setMonth(start.getMonth() + 8);
 
-  return new Response(
-    JSON.stringify({
-      success: true,
-      amc,
-    }),
-    {
-      status: 201,
-      headers: getCorsHeaders(origin),
-    }
-  );
+    const twelveMonth = new Date(start);
+    twelveMonth.setMonth(start.getMonth() + 12);
+
+    const amc = await AMC.create({
+      customerId: body.customerId,
+      roId: body.roId,
+      startDate: start,
+      fourMonth: { date: fourMonth },
+      eightMonth: { date: eightMonth },
+      twelveMonth: { date: twelveMonth },
+      status: "ACTIVE",
+    });
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        amc,
+      }),
+      {
+        status: 201,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  } catch (error) {
+    console.error("AMC CREATE ERROR:", error);
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "AMC creation failed",
+      }),
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  }
 }
