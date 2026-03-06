@@ -60,30 +60,37 @@ export async function GET(req: Request) {
 
     const now = new Date();
 
-    const formatted = amcs.map((amc: any) => {
-      const four = amc?.fourMonth?.date
-        ? new Date(amc.fourMonth.date)
-        : null;
+    const formatted = amcs.map((amc) => {
 
-      const eight = amc?.eightMonth?.date
-        ? new Date(amc.eightMonth.date)
-        : null;
+  const four = amc?.fourMonth?.date ? new Date(amc.fourMonth.date) : null;
+  const eight = amc?.eightMonth?.date ? new Date(amc.eightMonth.date) : null;
+  const twelve = amc?.twelveMonth?.date ? new Date(amc.twelveMonth.date) : null;
 
-      const twelve = amc?.twelveMonth?.date
-        ? new Date(amc.twelveMonth.date)
-        : null;
+  const fourDone = amc?.fourMonth?.completed;
+  const eightDone = amc?.eightMonth?.completed;
+  const twelveDone = amc?.twelveMonth?.completed;
 
-      let status = "ACTIVE";
+  let status = "ACTIVE";
 
-      if (twelve && now > twelve) status = "EXPIRED";
-      else if (eight && now > eight) status = "DUE";
-      else if (four && now > four) status = "DUE";
+  if (twelve && now > twelve && !twelveDone) {
+    status = "DUE";
+  }
+  else if (eight && now > eight && !eightDone) {
+    status = "DUE";
+  }
+  else if (four && now > four && !fourDone) {
+    status = "DUE";
+  }
 
-      return {
-        ...amc,
-        status,
-      };
-    });
+  if (twelveDone) {
+    status = "EXPIRED";
+  }
+
+  return {
+    ...amc,
+    status,
+  };
+});
 
     return new Response(JSON.stringify(formatted), {
       status: 200,
