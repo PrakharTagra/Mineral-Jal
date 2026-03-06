@@ -155,7 +155,7 @@ const AddService = () => {
             quantity: Number(p.quantity)
           })),
 
-          serviceCharge: serviceCharge + amcAmount,
+          serviceCharge: serviceCharge,
           discountPercent,
           discountAmount,
           totalAmount: finalAmount,
