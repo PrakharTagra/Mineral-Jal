@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { RO_PARTS } from "../../data/roParts";
-import "./AddService.css";
+import "../service/AddService.css";
 
 const AmcService = () => {
 
