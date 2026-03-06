@@ -1,5 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import AMC from "@/models/AMC";
+import Customer from "@/models/Customer";
+import RO from "@/models/RO";
 
 const allowedOrigins = [
   "http://localhost:5173",
